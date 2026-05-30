@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class HoaDon extends Model
+{
+    public const TRANG_THAI_DANG_TAO = 'dang_tao';
+    public const TRANG_THAI_DA_THANH_TOAN = 'da_thanh_toan';
+    public const TRANG_THAI_DA_HOAN_THANH = 'da_hoan_thanh';
+
+    protected $table = 'hoa_don';
+    protected $primaryKey = 'ma_hoa_don';
+    public $timestamps = false;
+
+    protected $fillable = ['ma_nguoi_dung', 'thoi_gian_tao', 'tong_tien', 'phuong_thuc_thanh_toan', 'trang_thai'];
+
+    protected function casts(): array
+    {
+        return [
+            'thoi_gian_tao' => 'datetime',
+            'tong_tien' => 'decimal:2',
+        ];
+    }
+
+    public function nguoiDung(): BelongsTo
+    {
+        return $this->belongsTo(NguoiDung::class, 'ma_nguoi_dung', 'ma_nguoi_dung');
+    }
+
+    public function chiTiets(): HasMany
+    {
+        return $this->hasMany(ChiTietHoaDon::class, 'ma_hoa_don', 'ma_hoa_don');
+    }
+}

@@ -1,0 +1,960 @@
+@extends('layouts.app')
+
+@section('title', 'Tạo order mới')
+
+@section('content')
+<div class="order-heading d-flex justify-content-between align-items-center mb-2">
+    <div>
+        <h1 class="h5 mb-0">Tạo order mới</h1>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ route('order.index') }}">Quay lại danh sách hóa đơn</a>
+</div>
+
+<div class="row g-3 order-page-shell">
+    <div class="col-xl-7 d-flex min-w-0">
+        <div class="card page-card order-column-card flex-fill overflow-hidden">
+            <div class="card-body d-flex flex-column order-panel">
+                <div class="row g-3 align-items-end mb-3 flex-shrink-0">
+                    <div class="col-lg-8">
+                        <label class="form-label" for="menu-search">Tìm món</label>
+                        <input id="menu-search" class="form-control" placeholder="Nhập tên món">
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="menu-category">Loại món</label>
+                        <select id="menu-category" class="form-select">
+                            <option value="">Tất cả</option>
+                            @foreach($loaiMons as $loaiMon)
+                                <option value="{{ $loaiMon->ma_loai_mon }}">{{ $loaiMon->ten_loai_mon }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div id="menu-grid" class="row g-3 order-panel-scroll">
+                    <div class="col-12 text-muted text-center py-4">Đang tải danh sách món...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-5 d-flex min-w-0">
+        <div class="card page-card order-column-card flex-fill overflow-hidden">
+            <div class="card-body d-flex flex-column order-panel">
+                <div id="order-message" class="alert d-none mb-3 flex-shrink-0" role="alert"></div>
+
+                <form id="order-form" method="POST" action="{{ route('order.store') }}" class="d-flex flex-column flex-grow-1 min-h-0">
+                    @csrf
+                    <div class="mb-3 flex-shrink-0">
+                        <label class="form-label">Hình thức thanh toán</label>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" checked name="phuong_thuc_thanh_toan" value="tien_mat" id="pm-cash">
+                                <label class="form-check-label" for="pm-cash">Tiền mặt</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="phuong_thuc_thanh_toan" value="chuyen_khoan" id="pm-bank">
+                                <label class="form-check-label" for="pm-bank">Chuyển khoản</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="order-lines" class="d-flex flex-column gap-3 order-panel-scroll flex-grow-1"></div>
+                    <div class="text-muted small mb-3 flex-shrink-0" id="order-empty">Chưa có món nào trong hóa đơn.</div>
+
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-3 flex-shrink-0">
+                        <span class="fw-semibold">Tổng tiền</span>
+                        <span id="order-total" class="fs-5">0 đ</span>
+                    </div>
+
+                    <div id="hidden-inputs"></div>
+                    <button class="btn btn-primary w-100 mt-3 flex-shrink-0" type="submit">Thanh toán</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="application/json" id="order-menu-data">@json($menuData)</script>
+<script type="application/json" id="order-topping-data">@json($toppingData)</script>
+
+<style>
+    .content-main > .container-fluid {
+        height: calc(100vh - 57px);
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding-top: .75rem !important;
+        padding-bottom: .75rem !important;
+    }
+    .order-heading {
+        flex: 0 0 auto;
+    }
+    .order-page-shell {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: calc(100vh - 180px);
+    }
+    .order-page-shell > [class*="col-"] {
+        min-width: 0;
+        min-height: 0;
+    }
+    .order-column-card,
+    .order-panel {
+        min-height: 0;
+        height: 100%;
+    }
+    .order-panel-scroll {
+        flex: 1 1 0;
+        min-height: 0;
+        max-height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        padding-right: .25rem;
+    }
+    .menu-item-button {
+        border: 0;
+        background: transparent;
+        padding: 0;
+    }
+    .menu-item-button:disabled {
+        cursor: not-allowed;
+    }
+    .menu-placeholder {
+        min-height: 142px;
+        display: grid;
+        place-items: center;
+        background: #eef2f7;
+        color: #64748b;
+        font-weight: 600;
+    }
+    .order-choice-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+    .order-choice-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .22rem .55rem;
+        border: 1px solid #d0d7e2;
+        border-radius: 999px;
+        background: #fff;
+    }
+    .order-choice-pill input {
+        margin: 0;
+    }
+    @media (max-width: 1199.98px) {
+        .content-main > .container-fluid {
+            height: auto;
+            display: block;
+            overflow: visible;
+        }
+        .order-column-card {
+            height: auto;
+        }
+        .order-page-shell {
+            height: auto;
+        }
+        .order-panel-scroll {
+            max-height: 480px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var STORAGE_KEY = 'order-draft-v5';
+    var menuGrid = document.getElementById('menu-grid');
+    var orderLines = document.getElementById('order-lines');
+    var hiddenInputs = document.getElementById('hidden-inputs');
+    var orderEmpty = document.getElementById('order-empty');
+    var totalNode = document.getElementById('order-total');
+    var form = document.getElementById('order-form');
+    var message = document.getElementById('order-message');
+    var searchInput = document.getElementById('menu-search');
+    var categoryInput = document.getElementById('menu-category');
+    var mons = JSON.parse(document.getElementById('order-menu-data').textContent || '[]');
+    var toppings = JSON.parse(document.getElementById('order-topping-data').textContent || '[]');
+    var cart = loadCart();
+
+    function byId(items) {
+        var map = {};
+        items.forEach(function (item) {
+            map[Number(item.id)] = item;
+        });
+        return map;
+    }
+
+    var monMap = byId(mons);
+    var toppingMap = byId(toppings);
+    var ingredientMeta = {};
+    mons.concat(toppings).forEach(function (mon) {
+        (mon.recipe || []).forEach(function (row) {
+            ingredientMeta[Number(row.ingredient_id)] = row;
+        });
+    });
+
+    function normalize(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function formatMoney(value) {
+        return new Intl.NumberFormat('vi-VN').format(Number(value || 0)) + ' đ';
+    }
+
+    function makeKey() {
+        return Math.random().toString(36).slice(2, 10);
+    }
+
+    function clone(value) {
+        return JSON.parse(JSON.stringify(value));
+    }
+
+    function loadCart() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            var parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function saveCart() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function clearCartDraft() {
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function showMessage(text, type) {
+        if (!text) {
+            message.className = 'alert d-none mb-3 flex-shrink-0';
+            message.textContent = '';
+            return;
+        }
+
+        message.className = 'alert alert-' + (type || 'danger') + ' mb-3 flex-shrink-0';
+        message.textContent = text;
+    }
+
+    function emptyNode(node) {
+        while (node.firstChild) {
+            node.removeChild(node.firstChild);
+        }
+    }
+
+    function usageFor(draftCart) {
+        var usage = {};
+        draftCart.forEach(function (line) {
+            var mon = monMap[Number(line.ma_mon)];
+            if (!mon) {
+                return;
+            }
+
+            (mon.recipe || []).forEach(function (recipe) {
+                var ingredientId = Number(recipe.ingredient_id);
+                var percent = Number((line.tuy_chinh || {})[ingredientId] || 100) / 100;
+                usage[ingredientId] = (usage[ingredientId] || 0) + Number(recipe.amount || 0) * Number(line.so_luong || 0) * percent;
+            });
+
+            (line.toppings || []).forEach(function (toppingLine) {
+                var topping = toppingMap[Number(toppingLine.ma_mon)];
+                if (!topping) {
+                    return;
+                }
+
+                (topping.recipe || []).forEach(function (recipe) {
+                    var ingredientId = Number(recipe.ingredient_id);
+                    usage[ingredientId] = (usage[ingredientId] || 0) + Number(recipe.amount || 0) * Number(toppingLine.so_luong || 0);
+                });
+            });
+        });
+        return usage;
+    }
+
+    function shortagesFor(draftCart) {
+        var usage = usageFor(draftCart);
+        var shortages = [];
+        Object.keys(usage).forEach(function (ingredientId) {
+            var meta = ingredientMeta[Number(ingredientId)];
+            if (!meta) {
+                return;
+            }
+
+            if (Number(usage[ingredientId]) > Number(meta.stock || 0) + 0.0001) {
+                shortages.push(meta.ingredient_name || ('NL #' + ingredientId));
+            }
+        });
+        return shortages;
+    }
+
+    function shortageMessage(shortages) {
+        return shortages.length ? 'Không đủ nguyên liệu: ' + shortages.join(', ') + '.' : '';
+    }
+
+    function defaultCustom(mon) {
+        var custom = {};
+        (mon.recipe || []).forEach(function (recipe) {
+            if (recipe.customizable) {
+                custom[Number(recipe.ingredient_id)] = 100;
+            }
+        });
+        return custom;
+    }
+
+    function defaultMode(mon) {
+        if (mon.service_mode === 'chi_nong') {
+            return 'nong';
+        }
+        if (mon.service_mode === 'chi_lanh') {
+            return 'lanh';
+        }
+        if (mon.service_mode === 'ca_hai') {
+            return 'nong';
+        }
+        return '';
+    }
+
+    function newLine(mon) {
+        return {
+            key: makeKey(),
+            ma_mon: Number(mon.id),
+            so_luong: 1,
+            che_do: defaultMode(mon),
+            ghi_chu: '',
+            tuy_chinh: defaultCustom(mon),
+            toppings: [],
+        };
+    }
+
+    function checkAddMon(monId) {
+        var mon = monMap[Number(monId)];
+        if (!mon) {
+            return { ok: false, message: 'Không tìm thấy món.' };
+        }
+
+        var draft = clone(cart);
+        draft.push(newLine(mon));
+        var shortages = shortagesFor(draft);
+        return { ok: !shortages.length, message: shortageMessage(shortages) };
+    }
+
+    function checkTopping(lineIndex, toppingId, quantity, toppingIndex) {
+        var draft = clone(cart);
+        var line = draft[lineIndex];
+        if (!line) {
+            return { ok: false, message: 'Không tìm thấy dòng món.' };
+        }
+
+        line.toppings = Array.isArray(line.toppings) ? line.toppings : [];
+        var row = { ma_mon: Number(toppingId), so_luong: Number(quantity || 1) };
+        if (typeof toppingIndex === 'number') {
+            line.toppings[toppingIndex] = row;
+        } else {
+            line.toppings.push(row);
+        }
+
+        var shortages = shortagesFor(draft);
+        return { ok: !shortages.length, message: shortageMessage(shortages) };
+    }
+
+    function lineTotal(line) {
+        var mon = monMap[Number(line.ma_mon)];
+        var total = Number(mon && mon.price ? mon.price : 0) * Number(line.so_luong || 0);
+        (line.toppings || []).forEach(function (item) {
+            var topping = toppingMap[Number(item.ma_mon)];
+            total += Number(topping && topping.price ? topping.price : 0) * Number(item.so_luong || 0);
+        });
+        return total;
+    }
+
+    function createText(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) {
+            node.className = className;
+        }
+        node.textContent = text;
+        return node;
+    }
+
+    function renderMenu() {
+        var keyword = normalize(searchInput.value);
+        var category = String(categoryInput.value || '');
+        emptyNode(menuGrid);
+
+        var filtered = mons.filter(function (mon) {
+            var sameCategory = !category || String(mon.category_id) === category;
+            var sameKeyword = !keyword || normalize(mon.name).indexOf(keyword) !== -1;
+            return sameCategory && sameKeyword;
+        });
+
+        if (!filtered.length) {
+            var emptyCol = document.createElement('div');
+            emptyCol.className = 'col-12 text-muted text-center py-4';
+            emptyCol.textContent = 'Không có món phù hợp.';
+            menuGrid.appendChild(emptyCol);
+            return;
+        }
+
+        filtered.forEach(function (mon) {
+            var availability = checkAddMon(mon.id);
+            var col = document.createElement('div');
+            var button = document.createElement('button');
+            var body = document.createElement('div');
+
+            col.className = 'col-xxl-3 col-lg-4 col-md-6';
+            button.type = 'button';
+            button.className = 'menu-item-button card widget-card h-100 w-100 text-start' + (availability.ok ? '' : ' is-warning is-disabled');
+            button.disabled = !availability.ok;
+            button.dataset.monId = mon.id;
+
+            if (mon.image) {
+                var image = document.createElement('img');
+                image.className = 'card-img-top';
+                image.style.height = '160px';
+                image.style.objectFit = 'cover';
+                image.alt = mon.name;
+                image.src = mon.image;
+                button.appendChild(image);
+            } else {
+                button.appendChild(createText('div', 'menu-placeholder', 'Cafe'));
+            }
+
+            body.className = 'card-body';
+            body.appendChild(createText('div', 'fw-semibold mb-1', mon.name));
+            body.appendChild(createText('div', 'text-muted small mb-2', mon.category_name || ''));
+            body.appendChild(createText('div', 'fw-semibold', formatMoney(mon.price)));
+            if (!availability.ok) {
+                body.appendChild(createText('span', 'badge text-bg-warning mt-2', 'Tạm hết'));
+                body.appendChild(createText('div', 'small text-warning mt-2', availability.message || 'Tạm hết'));
+            } else {
+                body.appendChild(createText('span', 'badge text-bg-success mt-2', 'Có thể phục vụ'));
+            }
+
+            button.appendChild(body);
+            col.appendChild(button);
+            menuGrid.appendChild(col);
+        });
+    }
+
+    function renderHiddenInputs() {
+        emptyNode(hiddenInputs);
+        cart.forEach(function (line, index) {
+            addHidden('items[' + index + '][ma_mon]', line.ma_mon);
+            addHidden('items[' + index + '][so_luong]', line.so_luong);
+            addHidden('items[' + index + '][che_do]', line.che_do || '');
+            addHidden('items[' + index + '][ghi_chu]', line.ghi_chu || '');
+
+            Object.keys(line.tuy_chinh || {}).forEach(function (ingredientId) {
+                addHidden('items[' + index + '][tuy_chinh][' + ingredientId + ']', line.tuy_chinh[ingredientId]);
+            });
+
+            (line.toppings || []).forEach(function (topping, toppingIndex) {
+                addHidden('items[' + index + '][toppings][' + toppingIndex + '][ma_mon]', topping.ma_mon);
+                addHidden('items[' + index + '][toppings][' + toppingIndex + '][so_luong]', topping.so_luong);
+            });
+        });
+    }
+
+    function addHidden(name, value) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        hiddenInputs.appendChild(input);
+    }
+
+    function renderCart() {
+        emptyNode(orderLines);
+        orderEmpty.classList.toggle('d-none', cart.length > 0);
+
+        var total = 0;
+        cart.forEach(function (line, index) {
+            var mon = monMap[Number(line.ma_mon)];
+            if (!mon) {
+                return;
+            }
+
+            total += lineTotal(line);
+            orderLines.appendChild(renderCartLine(line, mon, index));
+        });
+
+        totalNode.textContent = formatMoney(total);
+        renderHiddenInputs();
+        saveCart();
+    }
+
+    function renderCartLine(line, mon, index) {
+        var card = document.createElement('div');
+        var body = document.createElement('div');
+        card.className = 'card border-0 bg-light-subtle';
+        body.className = 'card-body';
+
+        var header = document.createElement('div');
+        header.className = 'd-flex justify-content-between align-items-start gap-3';
+        var titleBox = document.createElement('div');
+        titleBox.appendChild(createText('div', 'fw-semibold', mon.name));
+        titleBox.appendChild(createText('div', 'small text-muted', formatMoney(mon.price)));
+        var remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'btn btn-outline-danger btn-sm';
+        remove.dataset.action = 'remove-line';
+        remove.dataset.index = index;
+        remove.textContent = 'Xóa';
+        header.appendChild(titleBox);
+        header.appendChild(remove);
+        body.appendChild(header);
+
+        var row = document.createElement('div');
+        row.className = 'row g-3 mt-1';
+        row.appendChild(quantityControl(line, index));
+        row.appendChild(modeControl(line, mon, index));
+        var moneyCol = document.createElement('div');
+        moneyCol.className = 'col-12 col-md-4';
+        moneyCol.appendChild(createText('label', 'form-label small', 'Thành tiền'));
+        moneyCol.appendChild(createText('div', 'form-control form-control-sm bg-light', formatMoney(lineTotal(line))));
+        row.appendChild(moneyCol);
+        body.appendChild(row);
+
+        var noteWrap = document.createElement('div');
+        noteWrap.className = 'mt-3';
+        var note = document.createElement('input');
+        note.className = 'form-control form-control-sm';
+        note.dataset.action = 'note';
+        note.dataset.index = index;
+        note.value = line.ghi_chu || '';
+        noteWrap.appendChild(createText('label', 'form-label small', 'Ghi chú'));
+        noteWrap.appendChild(note);
+        body.appendChild(noteWrap);
+
+        var custom = customControl(line, mon, index);
+        if (custom) {
+            body.appendChild(custom);
+        }
+
+        if (mon.allow_topping) {
+            body.appendChild(toppingControl(line, index));
+        }
+
+        card.appendChild(body);
+        return card;
+    }
+
+    function quantityControl(line, index) {
+        var col = document.createElement('div');
+        var group = document.createElement('div');
+        var dec = document.createElement('button');
+        var input = document.createElement('input');
+        var inc = document.createElement('button');
+
+        col.className = 'col-12 col-md-4';
+        group.className = 'input-group input-group-sm';
+        dec.type = 'button';
+        dec.className = 'btn btn-outline-secondary';
+        dec.dataset.action = 'dec';
+        dec.dataset.index = index;
+        dec.textContent = '-';
+        input.className = 'form-control text-center bg-white';
+        input.readOnly = true;
+        input.value = line.so_luong;
+        inc.type = 'button';
+        inc.className = 'btn btn-outline-secondary';
+        inc.dataset.action = 'inc';
+        inc.dataset.index = index;
+        inc.textContent = '+';
+
+        group.appendChild(dec);
+        group.appendChild(input);
+        group.appendChild(inc);
+        col.appendChild(createText('label', 'form-label small', 'Số lượng'));
+        col.appendChild(group);
+        return col;
+    }
+
+    function modeControl(line, mon, index) {
+        var col = document.createElement('div');
+        col.className = 'col-12 col-md-4';
+        col.appendChild(createText('label', 'form-label small', 'Chế độ'));
+
+        if (mon.service_mode !== 'ca_hai') {
+            var text = 'Không áp dụng';
+            if (mon.service_mode === 'chi_nong') {
+                text = 'Nóng';
+            }
+            if (mon.service_mode === 'chi_lanh') {
+                text = 'Lạnh';
+            }
+            col.appendChild(createText('div', 'form-control form-control-sm bg-light', text));
+            return col;
+        }
+
+        var group = document.createElement('div');
+        group.className = 'order-choice-row';
+        ['nong', 'lanh'].forEach(function (mode) {
+            var label = document.createElement('label');
+            var input = document.createElement('input');
+            label.className = 'order-choice-pill';
+            input.className = 'form-check-input';
+            input.type = 'radio';
+            input.name = 'mode-' + line.key;
+            input.value = mode;
+            input.dataset.action = 'mode';
+            input.dataset.index = index;
+            input.checked = line.che_do === mode;
+            label.appendChild(input);
+            label.appendChild(document.createTextNode(mode === 'nong' ? 'Nóng' : 'Lạnh'));
+            group.appendChild(label);
+        });
+        col.appendChild(group);
+        return col;
+    }
+
+    function customControl(line, mon, index) {
+        var recipes = (mon.recipe || []).filter(function (recipe) {
+            return recipe.customizable;
+        });
+        if (!recipes.length) {
+            return null;
+        }
+
+        var wrap = document.createElement('div');
+        wrap.className = 'mt-3 d-flex flex-column gap-3';
+        recipes.forEach(function (recipe) {
+            var block = document.createElement('div');
+            var group = document.createElement('div');
+            block.className = 'd-flex flex-column gap-2';
+            group.className = 'order-choice-row';
+            block.appendChild(createText('span', 'small text-muted', recipe.ingredient_name));
+            [0, 25, 50, 75, 100].forEach(function (percent) {
+                var label = document.createElement('label');
+                var input = document.createElement('input');
+                label.className = 'order-choice-pill';
+                input.className = 'form-check-input';
+                input.type = 'radio';
+                input.name = 'custom-' + line.key + '-' + recipe.ingredient_id;
+                input.value = percent;
+                input.dataset.action = 'custom';
+                input.dataset.index = index;
+                input.dataset.ingredientId = recipe.ingredient_id;
+                input.checked = Number((line.tuy_chinh || {})[Number(recipe.ingredient_id)] || 100) === percent;
+                label.appendChild(input);
+                label.appendChild(document.createTextNode(percent + '%'));
+                group.appendChild(label);
+            });
+            block.appendChild(group);
+            wrap.appendChild(block);
+        });
+        return wrap;
+    }
+
+    function toppingControl(line, index) {
+        var wrap = document.createElement('div');
+        var header = document.createElement('div');
+        var addButton = document.createElement('button');
+        var available = toppings.filter(function (topping) {
+            return checkTopping(index, topping.id, 1).ok;
+        });
+
+        wrap.className = 'mt-3';
+        header.className = 'd-flex justify-content-between align-items-center mb-2';
+        header.appendChild(createText('label', 'form-label small mb-0', 'Topping'));
+        addButton.type = 'button';
+        addButton.className = 'btn btn-link btn-sm px-0';
+        addButton.dataset.action = 'add-topping';
+        addButton.dataset.index = index;
+        addButton.disabled = !available.length;
+        addButton.textContent = '+ Thêm topping';
+        header.appendChild(addButton);
+        wrap.appendChild(header);
+
+        if (!available.length) {
+            wrap.appendChild(createText('div', 'small text-warning mb-2', 'Hiện không có topping nào đủ nguyên liệu để thêm.'));
+        }
+
+        var list = document.createElement('div');
+        list.className = 'd-flex flex-column gap-2';
+        (line.toppings || []).forEach(function (item, toppingIndex) {
+            list.appendChild(toppingRow(line, index, item, toppingIndex));
+        });
+        wrap.appendChild(list);
+        return wrap;
+    }
+
+    function toppingRow(line, lineIndex, item, toppingIndex) {
+        var row = document.createElement('div');
+        var selectCol = document.createElement('div');
+        var qtyCol = document.createElement('div');
+        var removeCol = document.createElement('div');
+        var select = document.createElement('select');
+        var qty = document.createElement('input');
+        var remove = document.createElement('button');
+        var state = checkTopping(lineIndex, item.ma_mon, item.so_luong, toppingIndex);
+
+        row.className = 'row g-2 align-items-center';
+        selectCol.className = 'col-12 col-md-6';
+        qtyCol.className = 'col-6 col-md-3';
+        removeCol.className = 'col-6 col-md-3 text-end';
+        select.className = 'form-select form-select-sm' + (state.ok ? '' : ' is-invalid');
+        select.dataset.action = 'topping-select';
+        select.dataset.index = lineIndex;
+        select.dataset.toppingIndex = toppingIndex;
+
+        toppings.forEach(function (topping) {
+            var option = document.createElement('option');
+            var optionState = checkTopping(lineIndex, topping.id, item.so_luong, toppingIndex);
+            option.value = topping.id;
+            option.textContent = topping.name + (optionState.ok ? '' : ' - hết nguyên liệu');
+            option.selected = Number(topping.id) === Number(item.ma_mon);
+            option.disabled = !optionState.ok;
+            select.appendChild(option);
+        });
+
+        qty.type = 'number';
+        qty.min = '1';
+        qty.className = 'form-control form-control-sm';
+        qty.dataset.action = 'topping-qty';
+        qty.dataset.index = lineIndex;
+        qty.dataset.toppingIndex = toppingIndex;
+        qty.value = item.so_luong;
+
+        remove.type = 'button';
+        remove.className = 'btn btn-outline-danger btn-sm';
+        remove.dataset.action = 'remove-topping';
+        remove.dataset.index = lineIndex;
+        remove.dataset.toppingIndex = toppingIndex;
+        remove.textContent = 'Xóa';
+
+        selectCol.appendChild(select);
+        qtyCol.appendChild(qty);
+        removeCol.appendChild(remove);
+        row.appendChild(selectCol);
+        row.appendChild(qtyCol);
+        row.appendChild(removeCol);
+        if (!state.ok) {
+            var warningCol = document.createElement('div');
+            warningCol.className = 'col-12 small text-danger';
+            warningCol.textContent = state.message;
+            row.appendChild(warningCol);
+        }
+        return row;
+    }
+
+    function addMenuItem(monId) {
+        var check = checkAddMon(monId);
+        if (!check.ok) {
+            showMessage(check.message, 'danger');
+            return;
+        }
+
+        var mon = monMap[Number(monId)];
+        cart.push(newLine(mon));
+        showMessage('');
+        renderAll();
+    }
+
+    function renderAll() {
+        var menuTop = menuGrid.scrollTop;
+        var orderTop = orderLines.scrollTop;
+        renderMenu();
+        renderCart();
+        requestAnimationFrame(function () {
+            menuGrid.scrollTop = menuTop;
+            orderLines.scrollTop = orderTop;
+        });
+    }
+
+    menuGrid.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-mon-id]');
+        if (button && !button.disabled) {
+            addMenuItem(button.dataset.monId);
+        }
+    });
+
+    searchInput.addEventListener('input', renderMenu);
+    categoryInput.addEventListener('change', renderMenu);
+
+    orderLines.addEventListener('click', function (event) {
+        var action = event.target.dataset.action;
+        var index = Number(event.target.dataset.index);
+        if (!action || Number.isNaN(index)) {
+            return;
+        }
+
+        if (action === 'remove-line') {
+            cart.splice(index, 1);
+            showMessage('');
+            renderAll();
+            return;
+        }
+
+        if (action === 'dec' && cart[index].so_luong > 1) {
+            cart[index].so_luong -= 1;
+            showMessage('');
+            renderAll();
+            return;
+        }
+
+        if (action === 'inc') {
+            var draft = clone(cart);
+            draft[index].so_luong += 1;
+            var shortages = shortagesFor(draft);
+            if (shortages.length) {
+                showMessage(shortageMessage(shortages), 'danger');
+                return;
+            }
+            cart = draft;
+            showMessage('');
+            renderAll();
+            return;
+        }
+
+        if (action === 'add-topping') {
+            var first = toppings.find(function (topping) {
+                return checkTopping(index, topping.id, 1).ok;
+            });
+            if (!first) {
+                showMessage('Hiện không có topping nào đủ nguyên liệu để thêm.', 'danger');
+                return;
+            }
+            cart[index].toppings = Array.isArray(cart[index].toppings) ? cart[index].toppings : [];
+            cart[index].toppings.push({ ma_mon: Number(first.id), so_luong: 1 });
+            showMessage('');
+            renderAll();
+            return;
+        }
+
+        if (action === 'remove-topping') {
+            cart[index].toppings.splice(Number(event.target.dataset.toppingIndex), 1);
+            showMessage('');
+            renderAll();
+        }
+    });
+
+    orderLines.addEventListener('change', function (event) {
+        var action = event.target.dataset.action;
+        var index = Number(event.target.dataset.index);
+        if (!action || Number.isNaN(index)) {
+            return;
+        }
+
+        if (action === 'mode') {
+            cart[index].che_do = event.target.value;
+            renderHiddenInputs();
+            saveCart();
+            return;
+        }
+
+        if (action === 'custom') {
+            var next = clone(cart);
+            next[index].tuy_chinh[Number(event.target.dataset.ingredientId)] = Number(event.target.value);
+            var shortages = shortagesFor(next);
+            if (shortages.length) {
+                showMessage(shortageMessage(shortages), 'danger');
+                renderAll();
+                return;
+            }
+            cart = next;
+            showMessage('');
+            renderAll();
+            return;
+        }
+
+        if (action === 'topping-select') {
+            var toppingIndex = Number(event.target.dataset.toppingIndex);
+            var currentQty = Number(cart[index].toppings[toppingIndex].so_luong || 1);
+            var check = checkTopping(index, event.target.value, currentQty, toppingIndex);
+            if (!check.ok) {
+                showMessage(check.message, 'danger');
+                renderAll();
+                return;
+            }
+            cart[index].toppings[toppingIndex].ma_mon = Number(event.target.value);
+            showMessage('');
+            renderAll();
+            return;
+        }
+
+        if (action === 'topping-qty') {
+            var qty = Math.max(1, Number(event.target.value || 1));
+            var tIndex = Number(event.target.dataset.toppingIndex);
+            var selected = cart[index].toppings[tIndex].ma_mon;
+            var state = checkTopping(index, selected, qty, tIndex);
+            if (!state.ok) {
+                showMessage(state.message, 'danger');
+                renderAll();
+                return;
+            }
+            cart[index].toppings[tIndex].so_luong = qty;
+            showMessage('');
+            renderAll();
+        }
+    });
+
+    orderLines.addEventListener('input', function (event) {
+        if (event.target.dataset.action !== 'note') {
+            return;
+        }
+        var index = Number(event.target.dataset.index);
+        if (!Number.isNaN(index) && cart[index]) {
+            cart[index].ghi_chu = event.target.value;
+            renderHiddenInputs();
+            saveCart();
+        }
+    });
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (!cart.length) {
+            showMessage('Vui lòng chọn ít nhất một món trước khi thanh toán.', 'danger');
+            return;
+        }
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
+            body: new FormData(form),
+        })
+            .then(function (response) {
+                return response.json().then(function (data) {
+                    if (!response.ok) {
+                        var firstError = data.errors ? Object.values(data.errors)[0][0] : (data.message || 'Không thể thanh toán.');
+                        throw new Error(firstError);
+                    }
+                    return data;
+                });
+            })
+            .then(function (data) {
+                showMessage(data.message, 'success');
+                cart = [];
+                clearCartDraft();
+                renderAll();
+            })
+            .catch(function (error) {
+                showMessage(error.message, 'danger');
+            });
+    });
+
+    renderAll();
+});
+</script>
+@endsection
