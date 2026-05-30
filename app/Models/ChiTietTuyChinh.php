@@ -12,7 +12,7 @@ class ChiTietTuyChinh extends Model
     public $incrementing = false;
     public $timestamps = false;
 
-    protected $fillable = ['ma_chi_tiet', 'ma_nguyen_lieu', 'ti_le'];
+    protected $fillable = ['ma_ct', 'ma_nguyen_lieu', 'ti_le'];
 
     public function nguyenLieu(): BelongsTo
     {

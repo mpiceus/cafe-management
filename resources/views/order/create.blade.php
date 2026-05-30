@@ -944,6 +944,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             })
             .then(function (data) {
+                if (data.payment_url) {
+                    window.location.href = data.payment_url;
+                    return;
+                }
+
                 showMessage(data.message, 'success');
                 cart = [];
                 clearCartDraft();

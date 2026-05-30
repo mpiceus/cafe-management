@@ -93,12 +93,14 @@ class OrderRepository implements OrderRepositoryInterface
         $items = $this->gopDongCauHinh($items);
 
         return DB::transaction(function () use ($items, $maNguoiDung, $phuongThuc) {
+            $daThanhToan = $phuongThuc === 'tien_mat';
             $hoaDon = HoaDon::query()->create([
                 'ma_nguoi_dung' => $maNguoiDung,
                 'thoi_gian_tao' => now(),
+                'thoi_gian_thanh_toan' => $daThanhToan ? now() : null,
                 'tong_tien' => 0,
                 'phuong_thuc_thanh_toan' => $phuongThuc,
-                'trang_thai' => HoaDon::TRANG_THAI_DA_THANH_TOAN,
+                'trang_thai' => $daThanhToan ? HoaDon::TRANG_THAI_DA_THANH_TOAN : HoaDon::TRANG_THAI_DANG_TAO,
             ]);
 
             $tongTien = 0;
@@ -126,7 +128,7 @@ class OrderRepository implements OrderRepositoryInterface
                 foreach (($item['tuy_chinh'] ?? []) as $maNguyenLieu => $tiLe) {
                     if ((int) $tiLe !== 100) {
                         ChiTietTuyChinh::query()->create([
-                            'ma_chi_tiet' => $chiTiet->ma_chi_tiet,
+                            'ma_ct' => $chiTiet->ma_chi_tiet,
                             'ma_nguyen_lieu' => $maNguyenLieu,
                             'ti_le' => $tiLe,
                         ]);
@@ -151,7 +153,10 @@ class OrderRepository implements OrderRepositoryInterface
                 $this->truKhoTopping($item['toppings'] ?? []);
             }
 
-            $hoaDon->update(['tong_tien' => $tongTien]);
+            $hoaDon->update([
+                'tong_tien' => $tongTien,
+                'ma_thanh_toan' => $hoaDon->ma_thanh_toan ?: (config('sepay.payment_prefix', 'DH').$hoaDon->ma_hoa_don),
+            ]);
 
             return $hoaDon->load(['chiTiets.mon', 'nguoiDung']);
         });
