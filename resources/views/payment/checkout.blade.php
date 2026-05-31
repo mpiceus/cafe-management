@@ -51,7 +51,7 @@
     const statusNode = document.getElementById('payment-status');
     const message = document.getElementById('payment-message');
     const invoiceLink = document.getElementById('invoice-link');
-    const statusUrl = @json(route('payment.status', $hoaDon));
+    const statusUrl = @json(route('payment.status', $hoaDon, false));
 
     const showMessage = (text, type) => {
         if (!text) {
@@ -66,7 +66,12 @@
 
     const updateStatus = async () => {
         try {
-            const response = await fetch(statusUrl, { headers: { Accept: 'application/json' } });
+            const response = await fetch(statusUrl, {
+                headers: {
+                    Accept: 'application/json',
+                    'ngrok-skip-browser-warning': 'true',
+                },
+            });
             const data = await response.json();
             if (!response.ok) {
                 throw new Error(data.message || 'Không thể kiểm tra thanh toán.');

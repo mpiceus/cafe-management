@@ -4,6 +4,7 @@ return [
     'merchant_id' => env('SEPAY_MERCHANT_ID', ''),
     'secret_key' => env('SEPAY_SECRET_KEY', ''),
     'webhook_key' => env('SEPAY_WEBHOOK_KEY', ''),
+    'webhook_url' => env('SEPAY_WEBHOOK_URL', ''),
     'mode' => env('SEPAY_MODE', 'sandbox'),
 
     'bank_account' => env('SEPAY_BANK_ACCOUNT', ''),

@@ -20,6 +20,7 @@ use App\Repositories\NguyenLieuRepository;
 use App\Repositories\NguoiDungRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\PhaCheRepository;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -45,6 +46,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Paginator::useBootstrapFive();
     }
 }
