@@ -29,6 +29,14 @@ class GiaMonController extends Controller
         ]);
     }
 
+    public function show(Mon $mon): View
+    {
+        return view('gia-mon.show', [
+            'mon' => $mon->load(['loaiMon', 'giaMoiNhat']),
+            'lichSuGia' => $this->giaMonService->lichSuTheoMon($mon),
+        ]);
+    }
+
     public function create(Mon $mon): View
     {
         return view('gia-mon.create', [

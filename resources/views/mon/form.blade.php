@@ -29,8 +29,10 @@
         </div>
     @else
         <div class="col-md-4">
-            <label class="form-label">Giá hiện tại</label>
-            <div class="form-control bg-light">{{ $mon->giaMoiNhat ? number_format($mon->giaMoiNhat->gia, 0, ',', '.') . ' đ' : 'Chưa có giá' }}</div>
+            <label class="form-label" for="gia">Giá hiện tại</label>
+            <input id="gia" name="gia" type="number" min="0" step="100" class="form-control @error('gia') is-invalid @enderror" value="{{ old('gia', $mon->giaMoiNhat?->gia ?? 0) }}">
+            <div class="form-text">Nếu thay đổi, hệ thống sẽ áp dụng giá mới từ thời điểm hiện tại.</div>
+            @error('gia')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
     @endunless
 

@@ -6,6 +6,7 @@ use App\Models\GiaMon;
 use App\Models\Mon;
 use App\Repositories\Contracts\GiaMonRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class GiaMonService
 {

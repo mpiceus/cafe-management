@@ -38,14 +38,39 @@ Route::middleware('auth')->group(function () {
         ->except(['show', 'destroy'])
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
 
-    Route::resource('loai-mon', LoaiMonController::class)
-        ->parameters(['loai-mon' => 'loaiMon'])
-        ->except(['show', 'destroy'])
+    Route::get('loai-mon', [LoaiMonController::class, 'index'])
+        ->name('loai-mon.index')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER.','.NguoiDung::CHUC_VU_NHAN_VIEN_PHA_CHE);
+    Route::get('loai-mon/create', [LoaiMonController::class, 'create'])
+        ->name('loai-mon.create')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::post('loai-mon', [LoaiMonController::class, 'store'])
+        ->name('loai-mon.store')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::get('loai-mon/{loaiMon}/edit', [LoaiMonController::class, 'edit'])
+        ->name('loai-mon.edit')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::put('loai-mon/{loaiMon}', [LoaiMonController::class, 'update'])
+        ->name('loai-mon.update')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
 
-    Route::resource('nha-cung-cap', NhaCungCapController::class)
-        ->parameters(['nha-cung-cap' => 'nhaCungCap'])
-        ->except(['show'])
+    Route::get('nha-cung-cap', [NhaCungCapController::class, 'index'])
+        ->name('nha-cung-cap.index')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER.','.NguoiDung::CHUC_VU_NHAN_VIEN_PHA_CHE);
+    Route::get('nha-cung-cap/create', [NhaCungCapController::class, 'create'])
+        ->name('nha-cung-cap.create')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::post('nha-cung-cap', [NhaCungCapController::class, 'store'])
+        ->name('nha-cung-cap.store')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::get('nha-cung-cap/{nhaCungCap}/edit', [NhaCungCapController::class, 'edit'])
+        ->name('nha-cung-cap.edit')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::put('nha-cung-cap/{nhaCungCap}', [NhaCungCapController::class, 'update'])
+        ->name('nha-cung-cap.update')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::delete('nha-cung-cap/{nhaCungCap}', [NhaCungCapController::class, 'destroy'])
+        ->name('nha-cung-cap.destroy')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
 
     Route::get('mon', [MonController::class, 'index'])
@@ -70,6 +95,9 @@ Route::middleware('auth')->group(function () {
     Route::get('gia-mon', [GiaMonController::class, 'index'])
         ->name('gia-mon.index')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::get('gia-mon/{mon}', [GiaMonController::class, 'show'])
+        ->name('gia-mon.show')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER.','.NguoiDung::CHUC_VU_NHAN_VIEN_PHA_CHE);
     Route::get('gia-mon/{mon}/create', [GiaMonController::class, 'create'])
         ->name('gia-mon.create')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
@@ -77,17 +105,31 @@ Route::middleware('auth')->group(function () {
         ->name('gia-mon.store')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
 
-    Route::resource('nguyen-lieu', NguyenLieuController::class)
-        ->parameters(['nguyen-lieu' => 'nguyenLieu'])
-        ->except(['show', 'destroy'])
+    Route::get('nguyen-lieu', [NguyenLieuController::class, 'index'])
+        ->name('nguyen-lieu.index')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER.','.NguoiDung::CHUC_VU_NHAN_VIEN_PHA_CHE);
+    Route::get('nguyen-lieu/create', [NguyenLieuController::class, 'create'])
+        ->name('nguyen-lieu.create')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::post('nguyen-lieu', [NguyenLieuController::class, 'store'])
+        ->name('nguyen-lieu.store')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::get('nguyen-lieu/{nguyenLieu}/edit', [NguyenLieuController::class, 'edit'])
+        ->name('nguyen-lieu.edit')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::put('nguyen-lieu/{nguyenLieu}', [NguyenLieuController::class, 'update'])
+        ->name('nguyen-lieu.update')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
 
     Route::resource('don-nhap', DonNhapController::class)
         ->only(['index', 'show', 'create', 'store'])
-        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER);
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER.','.NguoiDung::CHUC_VU_NHAN_VIEN_PHA_CHE);
 
     Route::get('cong-thuc', [CongThucController::class, 'index'])
         ->name('cong-thuc.index')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER.','.NguoiDung::CHUC_VU_NHAN_VIEN_PHA_CHE);
+    Route::get('cong-thuc/{mon}', [CongThucController::class, 'show'])
+        ->name('cong-thuc.show')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER.','.NguoiDung::CHUC_VU_NHAN_VIEN_PHA_CHE);
     Route::get('cong-thuc/{mon}/edit', [CongThucController::class, 'edit'])
         ->name('cong-thuc.edit')

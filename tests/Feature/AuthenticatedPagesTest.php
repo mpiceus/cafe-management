@@ -15,7 +15,7 @@ class AuthenticatedPagesTest extends TestCase
         $owner = NguoiDung::query()->firstOrCreate(
             ['ten_dang_nhap' => 'test_owner'],
             [
-                'ho_ten' => 'Chủ kiểm thử',
+                'ho_ten' => 'Chu kiem thu',
                 'mat_khau' => 'password',
                 'chuc_vu' => NguoiDung::CHUC_VU_CHU_CUA_HANG,
                 'trang_thai' => NguoiDung::TRANG_THAI_HOAT_DONG,
@@ -29,7 +29,7 @@ class AuthenticatedPagesTest extends TestCase
         }
     }
 
-    public function test_order_staff_can_open_read_only_mon_and_recipe_and_nhap_hang_pages(): void
+    public function test_order_staff_can_open_read_only_catalog_recipe_and_nhap_hang_pages(): void
     {
         $this->requireTables(['nguoi_dung']);
 
@@ -44,14 +44,19 @@ class AuthenticatedPagesTest extends TestCase
         );
 
         $this->actingAs($staff)->get('/')->assertRedirect(route('order.index'));
-        $this->actingAs($staff)->get('/mon')->assertOk()->assertSee('Quản lý món')->assertDontSee('Thêm món');
-        $this->actingAs($staff)->get('/cong-thuc')->assertOk()->assertSee('Công thức pha chế');
-        $this->actingAs($staff)->get('/don-nhap')->assertOk();
-        $this->actingAs($staff)->get('/mon/create')->assertForbidden();
-        $this->actingAs($staff)->get('/cong-thuc/create')->assertStatus(405);
+
+        foreach (['/loai-mon', '/nha-cung-cap', '/mon', '/nguyen-lieu', '/cong-thuc', '/don-nhap', '/don-nhap/create'] as $uri) {
+            $this->actingAs($staff)->get($uri)->assertOk();
+        }
+
+        foreach (['/loai-mon/create', '/nha-cung-cap/create', '/mon/create', '/nguyen-lieu/create'] as $uri) {
+            $this->actingAs($staff)->get($uri)->assertForbidden();
+        }
+
+        $this->actingAs($staff)->get('/cong-thuc/create')->assertNotFound();
     }
 
-    public function test_barista_can_open_read_only_mon_recipe_and_pha_che_pages_without_dashboard_tab(): void
+    public function test_barista_can_open_read_only_catalog_recipe_nhap_hang_and_pha_che_pages(): void
     {
         $this->requireTables(['nguoi_dung']);
 
@@ -65,11 +70,15 @@ class AuthenticatedPagesTest extends TestCase
             ]
         );
 
-        $this->actingAs($barista)->get('/mon')->assertOk()->assertDontSee('Thêm món');
-        $this->actingAs($barista)->get('/cong-thuc')->assertOk();
-        $this->actingAs($barista)->get('/pha-che')->assertOk()->assertDontSee('Trang chủ');
-        $this->actingAs($barista)->get('/mon/create')->assertForbidden();
-        $this->actingAs($barista)->get('/cong-thuc/create')->assertStatus(405);
+        foreach (['/loai-mon', '/nha-cung-cap', '/mon', '/nguyen-lieu', '/cong-thuc', '/don-nhap', '/don-nhap/create', '/pha-che'] as $uri) {
+            $this->actingAs($barista)->get($uri)->assertOk();
+        }
+
+        foreach (['/loai-mon/create', '/nha-cung-cap/create', '/mon/create', '/nguyen-lieu/create'] as $uri) {
+            $this->actingAs($barista)->get($uri)->assertForbidden();
+        }
+
+        $this->actingAs($barista)->get('/cong-thuc/create')->assertNotFound();
     }
 
     public function test_bootstrap_pagination_is_rendered_on_paginated_tabs(): void
@@ -79,7 +88,7 @@ class AuthenticatedPagesTest extends TestCase
         $owner = NguoiDung::query()->firstOrCreate(
             ['ten_dang_nhap' => 'test_owner_pagination'],
             [
-                'ho_ten' => 'Chủ kiểm thử phân trang',
+                'ho_ten' => 'Chu kiem thu phan trang',
                 'mat_khau' => 'password',
                 'chuc_vu' => NguoiDung::CHUC_VU_CHU_CUA_HANG,
                 'trang_thai' => NguoiDung::TRANG_THAI_HOAT_DONG,
@@ -88,7 +97,7 @@ class AuthenticatedPagesTest extends TestCase
 
         for ($index = 1; $index <= 11; $index++) {
             LoaiMon::query()->firstOrCreate(
-                ['ten_loai_mon' => 'Loai test ' . $index],
+                ['ten_loai_mon' => 'Loai test '.$index],
                 []
             );
         }

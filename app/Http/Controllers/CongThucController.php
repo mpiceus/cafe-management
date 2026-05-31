@@ -28,6 +28,14 @@ class CongThucController extends Controller
         ]);
     }
 
+    public function show(Mon $mon): View
+    {
+        return view('cong-thuc.show', [
+            'mon' => $mon->load('loaiMon'),
+            'congThucs' => $this->service->congThuc($mon),
+        ]);
+    }
+
     public function edit(Mon $mon): View
     {
         return view('cong-thuc.edit', [
