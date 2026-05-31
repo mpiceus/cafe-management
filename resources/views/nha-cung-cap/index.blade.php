@@ -3,12 +3,15 @@
 @section('title', 'Quản lý nhà cung cấp')
 
 @section('content')
+@php($canManage = auth()->user()->chuc_vu === \App\Models\NguoiDung::CHUC_VU_CHU_CUA_HANG)
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h4 mb-0">Quản lý nhà cung cấp</h1>
         <div class="text-muted">Quản lý thông tin liên hệ và địa chỉ nhà cung cấp</div>
     </div>
-    <a class="btn btn-primary" href="{{ route('nha-cung-cap.create') }}">Thêm nhà cung cấp</a>
+    @if($canManage)
+        <a class="btn btn-primary" href="{{ route('nha-cung-cap.create') }}">Thêm nhà cung cấp</a>
+    @endif
 </div>
 
 <div class="card page-card mb-3">
@@ -34,7 +37,9 @@
                     <th>Email</th>
                     <th>Địa chỉ</th>
                     <th>Liên quan</th>
-                    <th class="text-end">Thao tác</th>
+                    @if($canManage)
+                        <th class="text-end">Thao tác</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -48,20 +53,18 @@
                             <div class="small">Nguyên liệu: {{ $nhaCungCap->nguyen_lieus_count }}</div>
                             <div class="small">Đơn nhập: {{ $nhaCungCap->don_nhaps_count }}</div>
                         </td>
-                        <td class="text-end">
-                            <div class="d-inline-flex gap-2">
-                                <a class="btn btn-outline-primary btn-sm" href="{{ route('nha-cung-cap.edit', $nhaCungCap) }}">Sửa</a>
-                                <form method="POST" action="{{ route('nha-cung-cap.destroy', $nhaCungCap) }}" onsubmit="return confirm('Xóa nhà cung cấp này?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-outline-danger btn-sm">Xóa</button>
-                                </form>
-                            </div>
-                        </td>
+                        @if($canManage)
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-2">
+                                    <a class="btn btn-outline-primary btn-sm" href="{{ route('nha-cung-cap.edit', $nhaCungCap) }}">Sửa</a>
+                    
+                                </div>
+                            </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">Chưa có nhà cung cấp.</td>
+                        <td colspan="{{ $canManage ? 6 : 5 }}" class="text-center text-muted py-4">Chưa có nhà cung cấp.</td>
                     </tr>
                 @endforelse
             </tbody>

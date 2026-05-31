@@ -7,7 +7,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h4 mb-0">Quản lý món</h1>
-        <div class="text-muted">Theo dõi giá hiện tại, trạng thái bán và món tạm hết</div>
+        <div class="text-muted">Bấm tên món để xem công thức, bấm giá để xem lịch sử giá</div>
     </div>
     @if($canManage)
         <a class="btn btn-primary" href="{{ route('mon.create') }}">Thêm món</a>
@@ -73,13 +73,17 @@
                                     @endif
                                 </div>
                                 <div>
-                                    <div class="fw-semibold">{{ $mon->ten_mon }}</div>
+                                    <a class="fw-semibold text-decoration-none" href="{{ route('cong-thuc.show', $mon) }}">{{ $mon->ten_mon }}</a>
                                     <div class="text-muted small">{{ \Illuminate\Support\Str::limit($mon->mo_ta, 80) }}</div>
                                 </div>
                             </div>
                         </td>
                         <td>{{ $mon->loaiMon?->ten_loai_mon }}</td>
-                        <td>{{ $mon->giaMoiNhat ? number_format($mon->giaMoiNhat->gia, 0, ',', '.') . ' đ' : 'Chưa có giá' }}</td>
+                        <td>
+                            <a class="text-decoration-none" href="{{ route('gia-mon.show', $mon) }}">
+                                {{ $mon->giaMoiNhat ? number_format($mon->giaMoiNhat->gia, 0, ',', '.') . ' đ' : 'Chưa có giá' }}
+                            </a>
+                        </td>
                         <td>{{ ['ca_hai' => 'Cả hai', 'chi_nong' => 'Chỉ nóng', 'chi_lanh' => 'Chỉ lạnh', 'khong_ap_dung' => 'Không áp dụng'][$mon->che_do_phuc_vu] ?? $mon->che_do_phuc_vu }}</td>
                         <td>{{ $mon->cho_them_topping ? 'Có' : 'Không' }}</td>
                         <td>

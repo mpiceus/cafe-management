@@ -2,11 +2,19 @@
 
 namespace App\Http\Requests\DonNhap;
 
+use App\Models\NguoiDung;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreDonNhapRequest extends FormRequest
 {
-    public function authorize(): bool { return $this->user()?->isChuCuaHang(); }
+    public function authorize(): bool
+    {
+        return in_array($this->user()?->chuc_vu, [
+            NguoiDung::CHUC_VU_CHU_CUA_HANG,
+            NguoiDung::CHUC_VU_NHAN_VIEN_ORDER,
+            NguoiDung::CHUC_VU_NHAN_VIEN_PHA_CHE,
+        ], true);
+    }
 
     public function rules(): array
     {

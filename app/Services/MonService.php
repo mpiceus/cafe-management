@@ -67,11 +67,25 @@ class MonService
     public function capNhat(Mon $mon, array $data): Mon
     {
         $this->assertUniqueTenMon($data['ten_mon'], $mon->ma_mon);
+        $giaMoi = (float) $data['gia'];
         $data['cho_them_topping'] = (bool) ($data['cho_them_topping'] ?? false);
         $data = $this->xuLyHinhAnh($data, $mon);
         unset($data['gia'], $data['ngay_ap_dung']);
 
-        return $this->monRepository->update($mon, $data);
+        return DB::transaction(function () use ($mon, $data, $giaMoi) {
+            $mon = $this->monRepository->update($mon, $data);
+            $giaHienTai = $mon->giaMoiNhat?->gia;
+
+            if ($giaHienTai === null || (float) $giaHienTai !== $giaMoi) {
+                $this->giaMonRepository->create([
+                    'ma_mon' => $mon->ma_mon,
+                    'gia' => $giaMoi,
+                    'ngay_ap_dung' => now(),
+                ]);
+            }
+
+            return $mon->refresh();
+        });
     }
 
     public function doiTrangThai(Mon $mon): Mon

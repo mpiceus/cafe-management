@@ -11,8 +11,11 @@
         body.auth-shell { overflow: hidden; }
         .app-shell { min-height: 100vh; height: 100vh; overflow: hidden; --sidebar-width: 272px; }
         .sidebar { width: var(--sidebar-width); min-width: var(--sidebar-width); max-width: var(--sidebar-width); background: #18212f; height: 100vh; overflow-y: auto; flex: 0 0 var(--sidebar-width); transition: width .2s ease, min-width .2s ease, max-width .2s ease, flex-basis .2s ease, padding .2s ease, transform .2s ease; }
-        .sidebar a { color: #cbd5e1; text-decoration: none; }
-        .sidebar a.active, .sidebar a:hover { color: #fff; background: #263244; }
+        .sidebar a, .sidebar .sidebar-group-toggle { color: #cbd5e1; text-decoration: none; }
+        .sidebar a.active, .sidebar a:hover, .sidebar .sidebar-group-toggle:hover, .sidebar .sidebar-group-toggle[aria-expanded="true"] { color: #fff; background: #263244; }
+        .sidebar-group-toggle { width: 100%; border: 0; background: transparent; text-align: left; }
+        .sidebar-subnav { padding-left: .75rem; border-left: 1px solid rgba(203, 213, 225, .18); margin-left: .75rem; }
+        .sidebar-subnav .nav-link { font-size: .925rem; padding-top: .35rem; padding-bottom: .35rem; }
         .content { min-width: 0; width: 0; flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; }
         .content-main { flex: 1 1 auto; min-height: 0; overflow: auto; }
         .content-main > .container-fluid { max-width: 100%; }

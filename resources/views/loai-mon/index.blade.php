@@ -3,12 +3,15 @@
 @section('title', 'Quản lý loại món')
 
 @section('content')
+@php($canManage = auth()->user()->chuc_vu === \App\Models\NguoiDung::CHUC_VU_CHU_CUA_HANG)
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h4 mb-0">Quản lý loại món</h1>
-        <div class="text-muted">Thêm, sửa và tìm kiếm nhóm món trong menu</div>
+        <div class="text-muted">Bấm vào tên loại món hoặc số món để xem danh sách món đã lọc</div>
     </div>
-    <a class="btn btn-primary" href="{{ route('loai-mon.create') }}">Thêm loại món</a>
+    @if($canManage)
+        <a class="btn btn-primary" href="{{ route('loai-mon.create') }}">Thêm loại món</a>
+    @endif
 </div>
 
 <div class="card page-card mb-3">
@@ -32,22 +35,34 @@
                     <th>Tên loại món</th>
                     <th>Mô tả</th>
                     <th>Số món</th>
-                    <th class="text-end">Thao tác</th>
+                    @if($canManage)
+                        <th class="text-end">Thao tác</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
                 @forelse($loaiMons as $loaiMon)
                     <tr>
-                        <td class="fw-semibold">{{ $loaiMon->ten_loai_mon }}</td>
-                        <td>{{ $loaiMon->mo_ta ?: 'Không có mô tả' }}</td>
-                        <td>{{ $loaiMon->mons_count }}</td>
-                        <td class="text-end">
-                            <a class="btn btn-outline-primary btn-sm" href="{{ route('loai-mon.edit', $loaiMon) }}">Sửa</a>
+                        <td class="fw-semibold">
+                            <a href="{{ route('mon.index', ['ma_loai_mon' => $loaiMon->ma_loai_mon]) }}" class="text-decoration-none">
+                                {{ $loaiMon->ten_loai_mon }}
+                            </a>
                         </td>
+                        <td>{{ $loaiMon->mo_ta ?: 'Không có mô tả' }}</td>
+                        <td>
+                            <a href="{{ route('mon.index', ['ma_loai_mon' => $loaiMon->ma_loai_mon]) }}" class="badge text-bg-light text-decoration-none">
+                                {{ $loaiMon->mons_count }}
+                            </a>
+                        </td>
+                        @if($canManage)
+                            <td class="text-end">
+                                <a class="btn btn-outline-primary btn-sm" href="{{ route('loai-mon.edit', $loaiMon) }}">Sửa</a>
+                            </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-4">Chưa có loại món.</td>
+                        <td colspan="{{ $canManage ? 4 : 3 }}" class="text-center text-muted py-4">Chưa có loại món.</td>
                     </tr>
                 @endforelse
             </tbody>
