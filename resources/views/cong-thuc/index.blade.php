@@ -3,6 +3,7 @@
 @section('title', 'Công thức pha chế')
 
 @section('content')
+@php($canManage = auth()->user()->chuc_vu === \App\Models\NguoiDung::CHUC_VU_CHU_CUA_HANG)
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h4 mb-0">Công thức pha chế</h1>
@@ -34,7 +35,11 @@
 <div class="row g-3">
     @forelse($mons as $mon)
         <div class="col-lg-4 col-md-6">
-            <a href="{{ route('cong-thuc.edit', $mon) }}" class="card widget-card h-100 text-decoration-none text-body">
+            @if($canManage)
+                <a href="{{ route('cong-thuc.edit', $mon) }}" class="card widget-card h-100 text-decoration-none text-body">
+            @else
+                <div class="card widget-card h-100 text-body">
+            @endif
                 <div class="card-body">
                     <div class="fw-bold fs-5 mb-1">{{ $mon->ten_mon }}</div>
                     <div class="text-muted small mb-3">{{ $mon->loaiMon?->ten_loai_mon }}</div>
@@ -42,14 +47,18 @@
                         @forelse($mon->congThucs as $item)
                             <div class="d-flex justify-content-between gap-3">
                                 <span>{{ $item->nguyenLieu?->ten_nguyen_lieu }}</span>
-                                <span class="text-muted">{{ number_format($item->so_luong, 2, ',', '.') }} {{ $item->nguyenLieu?->don_vi_tinh }}</span>
+                                <span class="text-muted">{{ \App\Support\FormatHelper::number($item->so_luong) }} {{ $item->nguyenLieu?->don_vi_tinh }}</span>
                             </div>
                         @empty
                             <span class="text-muted">Chưa có công thức.</span>
                         @endforelse
                     </div>
                 </div>
-            </a>
+            @if($canManage)
+                </a>
+            @else
+                </div>
+            @endif
         </div>
     @empty
         <div class="col-12"><div class="card page-card"><div class="card-body text-muted text-center">Không có món phù hợp.</div></div></div>
