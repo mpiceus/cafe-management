@@ -344,6 +344,44 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
+    function lineSignature(line) {
+        var tuyChinh = {};
+        Object.keys(line.tuy_chinh || {}).sort().forEach(function (ingredientId) {
+            tuyChinh[ingredientId] = Number(line.tuy_chinh[ingredientId]);
+        });
+
+        var lineToppings = (line.toppings || []).map(function (topping) {
+            return {
+                ma_mon: Number(topping.ma_mon),
+                so_luong: Number(topping.so_luong || 0),
+            };
+        }).sort(function (first, second) {
+            return first.ma_mon - second.ma_mon || first.so_luong - second.so_luong;
+        });
+
+        return JSON.stringify({
+            ma_mon: Number(line.ma_mon),
+            che_do: line.che_do || '',
+            ghi_chu: String(line.ghi_chu || '').trim(),
+            tuy_chinh: tuyChinh,
+            toppings: lineToppings,
+        });
+    }
+
+    function addOrIncreaseLine(draftCart, line) {
+        var signature = lineSignature(line);
+        var existing = draftCart.find(function (cartLine) {
+            return lineSignature(cartLine) === signature;
+        });
+
+        if (existing) {
+            existing.so_luong = Number(existing.so_luong || 0) + Number(line.so_luong || 1);
+            return;
+        }
+
+        draftCart.push(line);
+    }
+
     function checkAddMon(monId) {
         var mon = monMap[Number(monId)];
         if (!mon) {
@@ -351,7 +389,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         var draft = clone(cart);
-        draft.push(newLine(mon));
+        addOrIncreaseLine(draft, newLine(mon));
         var shortages = shortagesFor(draft);
         return { ok: !shortages.length, message: shortageMessage(shortages) };
     }
@@ -764,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         var mon = monMap[Number(monId)];
-        cart.push(newLine(mon));
+        addOrIncreaseLine(cart, newLine(mon));
         showMessage('');
         renderAll();
     }

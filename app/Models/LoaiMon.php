@@ -15,6 +15,7 @@ class LoaiMon extends Model
 
     protected $fillable = [
         'ten_loai_mon',
+        'mo_ta',
     ];
 
     public function mons(): HasMany

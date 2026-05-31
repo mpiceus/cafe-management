@@ -17,4 +17,9 @@ class NhaCungCap extends Model
     {
         return $this->hasMany(NguyenLieu::class, 'ma_nha_cung_cap', 'ma_nha_cung_cap');
     }
+
+    public function donNhaps(): HasMany
+    {
+        return $this->hasMany(DonNhap::class, 'ma_nha_cung_cap', 'ma_nha_cung_cap');
+    }
 }

@@ -6,14 +6,12 @@
     <div class="text-white fw-semibold fs-5 px-2 py-3">Quản lý Cafe</div>
     <nav class="nav flex-column gap-1">
         @if($isAdmin)
-            <a data-menu-key="dashboard" class="nav-link rounded {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Trang chủ</a>
-        @endif
-
-        @if($isAdmin)
             <a data-menu-key="nguoi-dung" class="nav-link rounded {{ request()->routeIs('nguoi-dung.*') ? 'active' : '' }}" href="{{ route('nguoi-dung.index') }}">Người dùng</a>
+            <a data-menu-key="loai-mon" class="nav-link rounded {{ request()->routeIs('loai-mon.*') ? 'active' : '' }}" href="{{ route('loai-mon.index') }}">Loại món</a>
             <a data-menu-key="mon" class="nav-link rounded {{ request()->routeIs('mon.*') ? 'active' : '' }}" href="{{ route('mon.index') }}">Quản lý món</a>
             <a data-menu-key="gia-mon" class="nav-link rounded {{ request()->routeIs('gia-mon.*') ? 'active' : '' }}" href="{{ route('gia-mon.index') }}">Quản lý giá bán</a>
             <a data-menu-key="cong-thuc" class="nav-link rounded {{ request()->routeIs('cong-thuc.*') ? 'active' : '' }}" href="{{ route('cong-thuc.index') }}">Công thức</a>
+            <a data-menu-key="nha-cung-cap" class="nav-link rounded {{ request()->routeIs('nha-cung-cap.*') ? 'active' : '' }}" href="{{ route('nha-cung-cap.index') }}">Nhà cung cấp</a>
             <a data-menu-key="nguyen-lieu" class="nav-link rounded {{ request()->routeIs('nguyen-lieu.*') ? 'active' : '' }}" href="{{ route('nguyen-lieu.index') }}">Nguyên liệu</a>
             <a data-menu-key="don-nhap" class="nav-link rounded {{ request()->routeIs('don-nhap.*') ? 'active' : '' }}" href="{{ route('don-nhap.index') }}">Nhập hàng</a>
             <a data-menu-key="bao-cao" class="nav-link rounded {{ request()->routeIs('bao-cao.*') ? 'active' : '' }}" href="{{ route('bao-cao.index') }}">Báo cáo</a>

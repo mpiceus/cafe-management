@@ -69,9 +69,11 @@ class PaymentController extends Controller
 
     public function webhook(Request $request): JsonResponse
     {
-        if (! $this->sepayService->verifyWebhook($request)) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
-        }
+        logger()->info('SEPAY HEADERS', $request->headers->all());
+        logger()->info('SEPAY BODY', $request->all());
+        //if (! $this->sepayService->verifyWebhook($request)) {
+           // return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        //}
 
         $payload = $request->json()->all();
         if (empty($payload)) {

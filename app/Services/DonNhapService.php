@@ -50,10 +50,14 @@ class DonNhapService
                     ]);
                 }
 
-                $heSoDonVi = in_array($item['don_vi_mua'], ['kg', 'l'], true) ? 1000 : 1;
+                $heSoDonVi = $this->heSoDonVi($item['don_vi_mua']);
                 $soLuongCoBan = (float) $item['so_luong_mua'] * $heSoDonVi;
                 $soLuongNhapKho = $soLuongCoBan * (float) $nguyenLieu->ti_le_su_dung;
-                $thanhTien = ($soLuongCoBan / 100) * (float) $item['don_gia'];
+                $thanhTien = $this->thanhTien(
+                    (float) $item['so_luong_mua'],
+                    $item['don_vi_mua'],
+                    (float) $item['don_gia']
+                );
 
                 return [
                     'ma_nguyen_lieu' => (int) $item['ma_nguyen_lieu'],
@@ -76,5 +80,19 @@ class DonNhapService
             'ma_nha_cung_cap' => $data['ma_nha_cung_cap'],
             'ma_nguoi_dung' => $maNguoiDung,
         ], $items);
+    }
+
+    private function heSoDonVi(string $donViMua): int
+    {
+        return in_array($donViMua, ['kg', 'l'], true) ? 1000 : 1;
+    }
+
+    private function thanhTien(float $soLuongMua, string $donViMua, float $donGia): float
+    {
+        if (in_array($donViMua, ['kg', 'l'], true)) {
+            return $soLuongMua * $donGia;
+        }
+
+        return ($soLuongMua / 100) * $donGia;
     }
 }

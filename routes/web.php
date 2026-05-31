@@ -6,8 +6,10 @@ use App\Http\Controllers\CongThucController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonNhapController;
 use App\Http\Controllers\GiaMonController;
+use App\Http\Controllers\LoaiMonController;
 use App\Http\Controllers\MonController;
 use App\Http\Controllers\NguyenLieuController;
+use App\Http\Controllers\NhaCungCapController;
 use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
@@ -34,6 +36,16 @@ Route::middleware('auth')->group(function () {
     Route::resource('nguoi-dung', NguoiDungController::class)
         ->parameters(['nguoi-dung' => 'nguoiDung'])
         ->except(['show', 'destroy'])
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+
+    Route::resource('loai-mon', LoaiMonController::class)
+        ->parameters(['loai-mon' => 'loaiMon'])
+        ->except(['show', 'destroy'])
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+
+    Route::resource('nha-cung-cap', NhaCungCapController::class)
+        ->parameters(['nha-cung-cap' => 'nhaCungCap'])
+        ->except(['show'])
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
 
     Route::get('mon', [MonController::class, 'index'])
