@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Cafe Management')</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('vendor/bootstrap/5.3.3/css/bootstrap.min.css') }}">
     <style>
         body { background: #f5f7fb; }
         body.auth-shell { overflow: hidden; }
@@ -51,7 +51,7 @@
 @else
     @yield('content')
 @endauth
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('vendor/bootstrap/5.3.3/js/bootstrap.bundle.min.js') }}"></script>
 <script>
 document.querySelectorAll('form[data-persist-key]').forEach(function (form) {
     const key = 'draft:' + form.dataset.persistKey;

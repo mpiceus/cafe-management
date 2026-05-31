@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\LoaiMon;
 use App\Models\NguoiDung;
 use Tests\TestCase;
 
@@ -69,5 +70,33 @@ class AuthenticatedPagesTest extends TestCase
         $this->actingAs($barista)->get('/pha-che')->assertOk()->assertDontSee('Trang chủ');
         $this->actingAs($barista)->get('/mon/create')->assertForbidden();
         $this->actingAs($barista)->get('/cong-thuc/create')->assertStatus(405);
+    }
+
+    public function test_bootstrap_pagination_is_rendered_on_paginated_tabs(): void
+    {
+        $this->requireTables(['nguoi_dung', 'loai_mon']);
+
+        $owner = NguoiDung::query()->firstOrCreate(
+            ['ten_dang_nhap' => 'test_owner_pagination'],
+            [
+                'ho_ten' => 'Chủ kiểm thử phân trang',
+                'mat_khau' => 'password',
+                'chuc_vu' => NguoiDung::CHUC_VU_CHU_CUA_HANG,
+                'trang_thai' => NguoiDung::TRANG_THAI_HOAT_DONG,
+            ]
+        );
+
+        for ($index = 1; $index <= 11; $index++) {
+            LoaiMon::query()->firstOrCreate(
+                ['ten_loai_mon' => 'Loai test ' . $index],
+                []
+            );
+        }
+
+        $response = $this->actingAs($owner)->get('/loai-mon');
+
+        $response->assertOk();
+        $response->assertSee('pagination');
+        $response->assertSee('page-link');
     }
 }
