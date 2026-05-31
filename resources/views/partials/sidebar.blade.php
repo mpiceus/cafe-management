@@ -3,7 +3,7 @@
 @php($isOrderStaff = $user->chuc_vu === \App\Models\NguoiDung::CHUC_VU_NHAN_VIEN_ORDER)
 @php($isBarista = $user->chuc_vu === \App\Models\NguoiDung::CHUC_VU_NHAN_VIEN_PHA_CHE)
 <aside class="sidebar flex-column p-3" id="app-sidebar">
-    <div class="text-white fw-semibold fs-5 px-2 py-3">Quản lý Cafe</div>
+    <div class="text-white fw-semibold fs-5 px-2 py-3">Ann Coffee</div>
     <nav class="nav flex-column gap-1">
         @if($isAdmin)
             <a data-menu-key="nguoi-dung" class="nav-link rounded {{ request()->routeIs('nguoi-dung.*') ? 'active' : '' }}" href="{{ route('nguoi-dung.index') }}">Người dùng</a>

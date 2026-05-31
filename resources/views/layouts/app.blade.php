@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Cafe Management')</title>
+    <title>@yield('title', 'Ann Coffee')</title>
     <link rel="stylesheet" href="{{ asset('vendor/bootstrap/5.3.3/css/bootstrap.min.css') }}">
     <style>
         body { background: #f5f7fb; }
