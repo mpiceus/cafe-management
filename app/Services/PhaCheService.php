@@ -18,6 +18,8 @@ class PhaCheService
     public function donChoPhaChe(): Collection
     {
         return $this->repository->donChoPhaChe()->map(function ($hoaDon) {
+            $hoaDon->setAttribute('thoi_gian_tao_iso', $hoaDon->thoi_gian_tao?->toISOString());
+            $hoaDon->setAttribute('thoi_gian_tao_text', $hoaDon->thoi_gian_tao?->format('d/m/Y H:i'));
             $hoaDon->chiTiets->transform(function ($chiTiet) {
                 $ingredients = collect();
 

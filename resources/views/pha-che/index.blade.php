@@ -39,14 +39,21 @@
         }
 
         orders.forEach(order => {
+            const createdAt = new Date(order.thoi_gian_tao_iso || order.thoi_gian_tao);
+            const diffMinutes = Math.max(0, Math.floor((Date.now() - createdAt.getTime()) / 60000));
+            const isLate = diffMinutes >= 10;
             const orderCard = document.createElement('div');
-            orderCard.className = 'card page-card';
+            orderCard.className = 'card page-card' + (isLate ? ' border-danger' : '');
             orderCard.innerHTML = `
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <div class="fw-bold fs-5">Hóa đơn #${order.ma_hoa_don}</div>
-                            <div class="text-muted small">${order.thoi_gian_tao}</div>
+                            <div class="text-muted small">${order.thoi_gian_tao_text || order.thoi_gian_tao}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="small">Đã chờ: <strong>${diffMinutes} phút</strong></div>
+                            ${isLate ? '<span class="badge text-bg-danger">Trễ</span>' : '<span class="badge text-bg-success">Trong giờ</span>'}
                         </div>
                     </div>
                     <div class="row g-3">
@@ -57,7 +64,7 @@
                                         <div class="d-flex justify-content-between gap-3">
                                             <div>
                                                 <div class="fw-semibold">${item.mon.ten_mon}</div>
-                                                <div class="small text-muted">SL: ${item.so_luong} ${item.che_do ? '- ' + item.che_do : ''}</div>
+                                                <div class="small text-muted">SL: ${item.so_luong} ${item.che_do ? '- ' + (item.che_do === 'chi_nong' || item.che_do === 'nong' ? 'Nóng' : (item.che_do === 'chi_lanh' || item.che_do === 'lanh' ? 'Lạnh' : item.che_do)) : ''}</div>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input complete-item" type="checkbox" data-id="${item.ma_chi_tiet}">

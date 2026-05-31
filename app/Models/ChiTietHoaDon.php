@@ -30,7 +30,7 @@ class ChiTietHoaDon extends Model
 
     public function tuyChinhs(): HasMany
     {
-        return $this->hasMany(ChiTietTuyChinh::class, 'ma_chi_tiet', 'ma_chi_tiet');
+        return $this->hasMany(ChiTietTuyChinh::class, 'ma_ct', 'ma_chi_tiet');
     }
 
     public function toppings(): HasMany

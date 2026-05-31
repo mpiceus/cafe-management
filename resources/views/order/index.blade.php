@@ -48,6 +48,7 @@
                     <th>Thanh toán</th>
                     <th>Tổng tiền</th>
                     <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -62,11 +63,22 @@
                         </td>
                         <td>{{ $hoaDon->phuong_thuc_thanh_toan === 'chuyen_khoan' ? 'Chuyển khoản' : 'Tiền mặt' }}</td>
                         <td>{{ number_format($hoaDon->tong_tien, 0, ',', '.') }} đ</td>
-                        <td>{{ ['dang_tao' => 'Đang tạo', 'da_thanh_toan' => 'Đã thanh toán', 'da_hoan_thanh' => 'Đã hoàn thành'][$hoaDon->trang_thai] ?? $hoaDon->trang_thai }}</td>
+                        <td>{{ ['dang_tao' => 'Chờ thanh toán', 'da_thanh_toan' => 'Đã thanh toán', 'da_hoan_thanh' => 'Đã hoàn thành'][$hoaDon->trang_thai] ?? $hoaDon->trang_thai }}</td>
+                        <td class="text-end">
+                            <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                <a class="btn btn-outline-primary btn-sm" href="{{ route('order.invoice', $hoaDon) }}">In PDF</a>
+                                @if($hoaDon->phuong_thuc_thanh_toan === 'chuyen_khoan' && $hoaDon->trang_thai === 'dang_tao')
+                                    <a class="btn btn-outline-success btn-sm" href="{{ route('payment.checkout', $hoaDon) }}">Thanh toán</a>
+                                @endif
+                                @if(auth()->user()->chuc_vu === \App\Models\NguoiDung::CHUC_VU_CHU_CUA_HANG)
+                                    <a class="btn btn-outline-secondary btn-sm" href="{{ route('payment.history', $hoaDon) }}">Lịch sử</a>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">Chưa có hóa đơn.</td>
+                        <td colspan="7" class="text-center text-muted py-4">Chưa có hóa đơn.</td>
                     </tr>
                 @endforelse
             </tbody>

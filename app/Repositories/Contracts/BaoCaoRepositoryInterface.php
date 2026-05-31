@@ -6,8 +6,10 @@ use Illuminate\Support\Collection;
 
 interface BaoCaoRepositoryInterface
 {
-    public function tongQuan(): array;
-    public function monBanChay(): Collection;
+    public function tongQuan(?string $tuNgay = null, ?string $denNgay = null): array;
+    public function monBanChay(?string $tuNgay = null, ?string $denNgay = null): Collection;
     public function nguyenLieuSapHet(): Collection;
     public function nguyenLieuTonNhieu(): Collection;
+    public function doanhThuTheoNgay(?string $tuNgay = null, ?string $denNgay = null): Collection;
+    public function doanhThuTheoThang(?string $tuNgay = null, ?string $denNgay = null): Collection;
 }

@@ -37,6 +37,7 @@ class OrderService
         $data['items'] = collect($data['items'])
             ->filter(fn ($item) => ! empty($item['ma_mon']) && (int) ($item['so_luong'] ?? 0) > 0)
             ->map(function ($item) {
+                $item['che_do'] = $this->normalizeCheDo($item['che_do'] ?? null);
                 $item['toppings'] = collect($item['toppings'] ?? [])
                     ->filter(fn ($topping) => ! empty($topping['ma_mon']) && (int) ($topping['so_luong'] ?? 0) > 0)
                     ->values()
@@ -52,5 +53,17 @@ class OrderService
         }
 
         return $this->repository->taoHoaDon($data['items'], $maNguoiDung, $data['phuong_thuc_thanh_toan']);
+    }
+
+    private function normalizeCheDo(?string $cheDo): ?string
+    {
+        $map = [
+            'nong' => 'chi_nong',
+            'lanh' => 'chi_lanh',
+            'chi_nong' => 'chi_nong',
+            'chi_lanh' => 'chi_lanh',
+        ];
+
+        return $map[$cheDo] ?? null;
     }
 }

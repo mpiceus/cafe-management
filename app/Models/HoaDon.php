@@ -16,12 +16,21 @@ class HoaDon extends Model
     protected $primaryKey = 'ma_hoa_don';
     public $timestamps = false;
 
-    protected $fillable = ['ma_nguoi_dung', 'thoi_gian_tao', 'tong_tien', 'phuong_thuc_thanh_toan', 'trang_thai'];
+    protected $fillable = [
+        'ma_nguoi_dung',
+        'ma_thanh_toan',
+        'thoi_gian_tao',
+        'thoi_gian_thanh_toan',
+        'tong_tien',
+        'phuong_thuc_thanh_toan',
+        'trang_thai',
+    ];
 
     protected function casts(): array
     {
         return [
             'thoi_gian_tao' => 'datetime',
+            'thoi_gian_thanh_toan' => 'datetime',
             'tong_tien' => 'decimal:2',
         ];
     }
@@ -34,5 +43,15 @@ class HoaDon extends Model
     public function chiTiets(): HasMany
     {
         return $this->hasMany(ChiTietHoaDon::class, 'ma_hoa_don', 'ma_hoa_don');
+    }
+
+    public function sepayTransactions(): HasMany
+    {
+        return $this->hasMany(SePayTransaction::class, 'ma_hoa_don', 'ma_hoa_don');
+    }
+
+    public function sepayRefunds(): HasMany
+    {
+        return $this->hasMany(SePayRefund::class, 'ma_hoa_don', 'ma_hoa_don');
     }
 }
