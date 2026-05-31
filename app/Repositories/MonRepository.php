@@ -21,7 +21,18 @@ class MonRepository implements MonRepositoryInterface
             ->when($filters['trang_thai'] ?? null, fn ($query, string $trangThai) => $query->where('trang_thai', $trangThai))
             ->orderByDesc('ma_mon')
             ->get();
-
+        /*
+        $query = Mon::query();
+        $query->with(['loaiMon', 'giaMoiNhat', 'congThucs.nguyenLieu']);
+        if (!empty($filters['ma_loai_mon'])) {
+            $query->where('ma_loai_mon', $filters['ma_loai_mon']);
+        }
+        if (!empty($filters['trang_thai'])) {
+            $query->where('trang_thai', $filters['trang_thai']);
+        }
+        $query->orderByDesc('ma_mon');
+        $items = $query->get();
+         */
         if (! empty($filters['tu_khoa'])) {
             $items = $items->filter(fn (Mon $mon) => TextNormalizer::contains($mon->ten_mon, $filters['tu_khoa']));
         }

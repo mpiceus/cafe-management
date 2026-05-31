@@ -55,6 +55,13 @@ class MonController extends Controller
 
     public function update(UpdateMonRequest $request, Mon $mon): RedirectResponse
     {
+        /*
+        Request → UpdateMonRequest
+        → authorize()
+        → rules()
+        → validate OK
+        → update() controller → service
+        */
         $this->monService->capNhat($mon, $request->validated());
 
         return redirect()
