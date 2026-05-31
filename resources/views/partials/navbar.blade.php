@@ -1,8 +1,8 @@
 <nav class="navbar navbar-expand bg-white border-bottom px-4">
     <div class="container-fluid px-0">
         <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-outline-secondary btn-sm" type="button" id="sidebar-toggle" aria-label="An hien thanh ben">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler btn btn-outline-secondary btn-sm p-1 d-inline-flex align-items-center justify-content-center" type="button" id="sidebar-toggle" aria-label="Ẩn hiện thanh bên">
+                <span class="navbar-toggler-icon" style="width: 1.1rem; height: 1.1rem;"></span>
             </button>
             <span class="navbar-brand mb-0 h1">Cafe Management</span>
         </div>
