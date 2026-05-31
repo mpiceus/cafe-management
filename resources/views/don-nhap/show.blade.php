@@ -62,8 +62,8 @@
                             <div class="fw-semibold">{{ $chiTiet->nguyenLieu?->ten_nguyen_lieu }}</div>
                             <div class="small text-muted">Đơn vị kho: {{ $chiTiet->nguyenLieu?->don_vi_tinh }}</div>
                         </td>
-                        <td>{{ number_format($chiTiet->so_luong, 2, ',', '.') }} {{ $chiTiet->don_vi_mua ?? $chiTiet->nguyenLieu?->don_vi_tinh }}</td>
-                        <td>{{ number_format($soLuongNhapKho, 2, ',', '.') }} {{ $chiTiet->nguyenLieu?->don_vi_tinh }}</td>
+                        <td>{{ \App\Support\FormatHelper::number($chiTiet->so_luong) }} {{ $chiTiet->don_vi_mua ?? $chiTiet->nguyenLieu?->don_vi_tinh }}</td>
+                        <td>{{ \App\Support\FormatHelper::number($soLuongNhapKho) }} {{ $chiTiet->nguyenLieu?->don_vi_tinh }}</td>
                         <td>{{ number_format($chiTiet->don_gia, 0, ',', '.') }} đ / 100{{ $chiTiet->nguyenLieu?->don_vi_tinh }}</td>
                         <td>{{ number_format($thanhTien, 0, ',', '.') }} đ</td>
                     </tr>

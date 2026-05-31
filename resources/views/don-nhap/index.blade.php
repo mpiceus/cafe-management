@@ -50,7 +50,7 @@
                             @foreach($dn->chiTiets as $ct)
                                 <div class="small">
                                     {{ $ct->nguyenLieu?->ten_nguyen_lieu }}:
-                                    {{ number_format($ct->so_luong, 2, ',', '.') }} {{ $ct->don_vi_mua ?? $ct->nguyenLieu?->don_vi_tinh }}
+                                    {{ \App\Support\FormatHelper::number($ct->so_luong) }} {{ $ct->don_vi_mua ?? $ct->nguyenLieu?->don_vi_tinh }}
                                     x {{ number_format($ct->don_gia, 0, ',', '.') }} đ
                                 </div>
                             @endforeach

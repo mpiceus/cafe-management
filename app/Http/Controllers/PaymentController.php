@@ -35,6 +35,30 @@ class PaymentController extends Controller
         ]);
     }
 
+    /**
+     * Customer-facing checkout page (minimal UI for QR display)
+     */
+    public function customerCheckout(HoaDon $hoaDon): View|RedirectResponse
+    {
+        if ($hoaDon->phuong_thuc_thanh_toan !== 'chuyen_khoan') {
+            return redirect()->route('order.index');
+        }
+
+        if (empty($hoaDon->ma_thanh_toan)) {
+            $hoaDon->update(['ma_thanh_toan' => $this->sepayService->paymentCode($hoaDon)]);
+        }
+
+        return view('customer.checkout', [
+            'hoaDon' => $hoaDon,
+            'paymentCode' => $this->sepayService->paymentCode($hoaDon),
+            'qrUrl' => $this->sepayService->qrUrl($hoaDon),
+            'bankName' => config('sepay.bank_name'),
+            'bankCode' => config('sepay.bank_code'),
+            'bankAccount' => config('sepay.bank_account'),
+            'accountName' => config('sepay.account_name'),
+        ]);
+    }
+
     public function status(HoaDon $hoaDon): JsonResponse
     {
         return response()->json([
@@ -70,7 +94,7 @@ class PaymentController extends Controller
         $amountIn = (float) $transaction->amount_in;
         $total = (float) $hoaDon->tong_tien;
 
-        if ($amountIn <= 0 || abs($amountIn - $total) > 0.01) {
+        if ($amountIn <= 0 || (int)$amountIn !== (int)$total) {
             return response()->json(['success' => false, 'message' => 'Sai số tiền thanh toán.']);
         }
 

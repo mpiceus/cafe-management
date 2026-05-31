@@ -3,12 +3,15 @@
 @section('title', 'Quản lý món')
 
 @section('content')
+@php($canManage = auth()->user()->chuc_vu === \App\Models\NguoiDung::CHUC_VU_CHU_CUA_HANG)
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h4 mb-0">Quản lý món</h1>
         <div class="text-muted">Theo dõi giá hiện tại, trạng thái bán và món tạm hết</div>
     </div>
-    <a class="btn btn-primary" href="{{ route('mon.create') }}">Thêm món</a>
+    @if($canManage)
+        <a class="btn btn-primary" href="{{ route('mon.create') }}">Thêm món</a>
+    @endif
 </div>
 
 <div class="card page-card mb-3">
@@ -54,7 +57,9 @@
                     <th>Topping</th>
                     <th>Trạng thái</th>
                     <th>Tình trạng kho</th>
-                    <th class="text-end">Thao tác</th>
+                    @if($canManage)
+                        <th class="text-end">Thao tác</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -88,20 +93,22 @@
                                 <span class="badge text-bg-light">Đủ nguyên liệu</span>
                             @endif
                         </td>
-                        <td class="text-end">
-                            <div class="d-inline-flex gap-2">
-                                <a class="btn btn-outline-primary btn-sm" href="{{ route('mon.edit', $mon) }}">Sửa</a>
-                                <form method="POST" action="{{ route('mon.toggle-status', $mon) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button class="btn btn-outline-secondary btn-sm" type="submit">{{ $mon->dangBan() ? 'Dừng bán' : 'Bán lại' }}</button>
-                                </form>
-                            </div>
-                        </td>
+                        @if($canManage)
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-2">
+                                    <a class="btn btn-outline-primary btn-sm" href="{{ route('mon.edit', $mon) }}">Sửa</a>
+                                    <form method="POST" action="{{ route('mon.toggle-status', $mon) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button class="btn btn-outline-secondary btn-sm" type="submit">{{ $mon->dangBan() ? 'Dừng bán' : 'Bán lại' }}</button>
+                                    </form>
+                                </div>
+                            </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">Chưa có món.</td>
+                        <td colspan="{{ $canManage ? 8 : 7 }}" class="text-center text-muted py-4">Chưa có món.</td>
                     </tr>
                 @endforelse
             </tbody>

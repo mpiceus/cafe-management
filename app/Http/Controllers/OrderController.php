@@ -80,7 +80,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function store(StoreOrderRequest $request): RedirectResponse|JsonResponse
+    public function store(StoreOrderRequest $request): RedirectResponse|JsonResponse|Response
     {
         $hoaDon = $this->service->thanhToan($request->validated(), auth()->id());
 
@@ -104,10 +104,12 @@ class OrderController extends Controller
                 'message' => "Đã thanh toán hóa đơn #{$hoaDon->ma_hoa_don}.",
                 'ma_hoa_don' => $hoaDon->ma_hoa_don,
                 'tong_tien' => $hoaDon->tong_tien,
+                'invoice_url' => route('order.invoice', $hoaDon),
             ]);
         }
 
-        return redirect()->route('order.index')->with('success', "Đã thanh toán hóa đơn #{$hoaDon->ma_hoa_don}.");
+        // For immediate (tiền mặt) payments, directly show the invoice PDF for printing
+        return $this->invoice($hoaDon);
     }
 
     public function invoice(HoaDon $hoaDon): Response

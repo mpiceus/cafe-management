@@ -926,6 +926,20 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        var paymentMethod = document.querySelector('input[name="phuong_thuc_thanh_toan"]:checked')?.value || 'tien_mat';
+
+        // For cash payments, submit a normal form to a new tab so the PDF invoice opens there
+        if (paymentMethod === 'tien_mat') {
+            form.target = '_blank';
+            // submit the form in the background (opens new tab) and clear the local cart
+            form.submit();
+            cart = [];
+            clearCartDraft();
+            renderAll();
+            return;
+        }
+
+        // For bank transfer, keep AJAX flow to redirect to payment URL
         fetch(form.action, {
             method: 'POST',
             headers: {
