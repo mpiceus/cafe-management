@@ -79,6 +79,10 @@
     const formatDecimal = value => new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value || 0);
     const getSupplierItems = () => nguyenLieus.filter(item => String(item.supplier_id) === String(supplierSelect.value));
     const getAllowedUnits = baseUnit => baseUnit === 'g' ? ['g', 'kg'] : ['ml', 'l'];
+    const getPriceUnitLabel = unit => (unit === 'kg' || unit === 'l') ? unit : `100${unit}`;
+    const calculateLineTotal = (quantity, unit, price) => (unit === 'kg' || unit === 'l')
+        ? quantity * price
+        : (quantity / 100) * price;
 
     const readDraftRows = () => {
         if (initialRows.length) {
@@ -173,7 +177,7 @@
         unitSelect.value = units.includes(currentUnit) ? currentUnit : units[0];
         unitSelect.dataset.requestedValue = '';
         row.querySelector('.ratio-display').value = selected.ratio;
-        row.querySelector('.price-label').textContent = `Đơn giá/100${selected.unit}`;
+        row.querySelector('.price-label').textContent = `Đơn giá/${getPriceUnitLabel(unitSelect.value)}`;
 
         return selected;
     };
@@ -187,7 +191,11 @@
         const heSo = (donViMua === 'kg' || donViMua === 'l') ? 1000 : 1;
         const soLuongCoBan = soLuongMua * heSo;
         const soLuongNhapKho = soLuongCoBan * ratio;
-        const thanhTien = (soLuongCoBan / 100) * donGia;
+        const thanhTien = calculateLineTotal(soLuongMua, donViMua, donGia);
+
+        if (selected) {
+            row.querySelector('.price-label').textContent = `Đơn giá/${getPriceUnitLabel(donViMua)}`;
+        }
 
         row.querySelector('.stock-qty').value = selected && soLuongMua > 0 ? formatDecimal(soLuongNhapKho) : '';
         row.querySelector('.line-total').value = selected && soLuongMua > 0 ? formatMoney(thanhTien) : '';

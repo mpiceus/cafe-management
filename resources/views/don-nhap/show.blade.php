@@ -54,8 +54,13 @@
                 @foreach($donNhap->chiTiets as $chiTiet)
                     @php
                         $heSo = in_array($chiTiet->don_vi_mua, ['kg', 'l'], true) ? 1000 : 1;
+                        $donViTinhGia = in_array($chiTiet->don_vi_mua, ['kg', 'l'], true)
+                            ? $chiTiet->don_vi_mua
+                            : '100'.($chiTiet->don_vi_mua ?? $chiTiet->nguyenLieu?->don_vi_tinh);
                         $soLuongNhapKho = $chiTiet->so_luong_nhap_kho ?? ($chiTiet->so_luong * $heSo * (float) ($chiTiet->nguyenLieu?->ti_le_su_dung ?? 1));
-                        $thanhTien = (($chiTiet->so_luong * $heSo) / 100) * $chiTiet->don_gia;
+                        $thanhTien = in_array($chiTiet->don_vi_mua, ['kg', 'l'], true)
+                            ? $chiTiet->so_luong * $chiTiet->don_gia
+                            : ($chiTiet->so_luong / 100) * $chiTiet->don_gia;
                     @endphp
                     <tr>
                         <td>
@@ -64,7 +69,7 @@
                         </td>
                         <td>{{ \App\Support\FormatHelper::number($chiTiet->so_luong) }} {{ $chiTiet->don_vi_mua ?? $chiTiet->nguyenLieu?->don_vi_tinh }}</td>
                         <td>{{ \App\Support\FormatHelper::number($soLuongNhapKho) }} {{ $chiTiet->nguyenLieu?->don_vi_tinh }}</td>
-                        <td>{{ number_format($chiTiet->don_gia, 0, ',', '.') }} đ / 100{{ $chiTiet->nguyenLieu?->don_vi_tinh }}</td>
+                        <td>{{ number_format($chiTiet->don_gia, 0, ',', '.') }} đ / {{ $donViTinhGia }}</td>
                         <td>{{ number_format($thanhTien, 0, ',', '.') }} đ</td>
                     </tr>
                 @endforeach

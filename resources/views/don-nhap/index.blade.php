@@ -48,10 +48,15 @@
                         <td>{{ number_format($dn->tong_tien, 0, ',', '.') }} đ</td>
                         <td>
                             @foreach($dn->chiTiets as $ct)
+                                @php
+                                    $donViTinhGia = in_array($ct->don_vi_mua, ['kg', 'l'], true)
+                                        ? $ct->don_vi_mua
+                                        : '100'.($ct->don_vi_mua ?? $ct->nguyenLieu?->don_vi_tinh);
+                                @endphp
                                 <div class="small">
                                     {{ $ct->nguyenLieu?->ten_nguyen_lieu }}:
                                     {{ \App\Support\FormatHelper::number($ct->so_luong) }} {{ $ct->don_vi_mua ?? $ct->nguyenLieu?->don_vi_tinh }}
-                                    x {{ number_format($ct->don_gia, 0, ',', '.') }} đ
+                                    x {{ number_format($ct->don_gia, 0, ',', '.') }} đ / {{ $donViTinhGia }}
                                 </div>
                             @endforeach
                         </td>

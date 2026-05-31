@@ -23,7 +23,7 @@ class AuthenticatedPagesTest extends TestCase
 
         $this->actingAs($owner)->get('/')->assertRedirect('/bao-cao');
 
-        foreach (['/mon', '/gia-mon', '/nguyen-lieu', '/don-nhap', '/cong-thuc', '/order', '/order/tao-moi', '/pha-che', '/bao-cao'] as $uri) {
+        foreach (['/loai-mon', '/nha-cung-cap', '/mon', '/gia-mon', '/nguyen-lieu', '/don-nhap', '/cong-thuc', '/order', '/order/tao-moi', '/pha-che', '/bao-cao'] as $uri) {
             $this->actingAs($owner)->get($uri)->assertOk();
         }
     }
