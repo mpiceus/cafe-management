@@ -81,8 +81,7 @@ class PaymentController extends Controller
         }
 
         $transaction = $this->sepayService->recordTransaction($payload);
-        $content = (string) ($payload['content'] ?? '');
-        $orderId = $this->sepayService->extractOrderId($content);
+        $orderId = $this->resolveOrderIdFromWebhookPayload($payload);
 
         if (! $orderId) {
             return response()->json(['success' => false, 'message' => 'Không tìm thấy mã hóa đơn.']);
@@ -112,6 +111,23 @@ class PaymentController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    private function resolveOrderIdFromWebhookPayload(array $payload): ?int
+    {
+        foreach (['content', 'code', 'description'] as $field) {
+            $value = (string) ($payload[$field] ?? '');
+            if ($value === '') {
+                continue;
+            }
+
+            $orderId = $this->sepayService->extractOrderId($value);
+            if ($orderId) {
+                return $orderId;
+            }
+        }
+
+        return null;
     }
 
     public function history(HoaDon $hoaDon): View

@@ -24,6 +24,7 @@ use App\Repositories\NhaCungCapRepository;
 use App\Repositories\NguoiDungRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\PhaCheRepository;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
@@ -52,6 +53,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
+
         if (app()->environment('production') || str_contains(request()->getHost(), 'ngrok')) {
             URL::forceScheme('https');
         }
