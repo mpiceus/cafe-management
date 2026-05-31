@@ -55,7 +55,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
-        if (app()->environment('production') || str_contains(request()->getHost(), 'ngrok')) {
+        /*if (app()->environment('production') || str_contains(request()->getHost(), 'ngrok')) {
+            URL::forceScheme('https');
+        }*/
+        if (app()->environment('production')) {
             URL::forceScheme('https');
         }
     }
