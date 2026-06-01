@@ -55,30 +55,37 @@ class BaoCaoService
         }
 
         return collect($usage)
-            ->map(function ($soLuong, $maNguyenLieu) use ($monBanChay) {
-                $nguyenLieu = $monBanChay
-                    ->flatMap(fn ($item) => $item->mon?->congThucs ?? [])
-                    ->firstWhere('ma_nguyen_lieu', (int) $maNguyenLieu)?->nguyenLieu;
+    ->map(function ($soLuong, $maNguyenLieu) use ($monBanChay) {
+        $nguyenLieu = $monBanChay
+            ->flatMap(fn ($item) => $item->mon?->congThucs ?? [])
+            ->firstWhere('ma_nguyen_lieu', (int) $maNguyenLieu)?->nguyenLieu;
 
-                if (! $nguyenLieu) {
-                    return null;
-                }
+        if (! $nguyenLieu) {
+            return null;
+        }
 
-                $tonKho = (float) $nguyenLieu->ton_kho;
-                $deXuat = max(0, (float) $soLuong - $tonKho);
+        $tonKho = (float) $nguyenLieu->ton_kho;
+        $tonToiThieu = (float) $nguyenLieu->so_luong_toi_thieu;
 
-                if ($deXuat <= 0) {
-                    return null;
-                }
+        // Tiêu thụ dự kiến + mức tồn tối thiểu
+        $deXuat = max(
+            0,
+            (float) $soLuong + $tonToiThieu - $tonKho
+        );
 
-                return [
-                    'ten' => $nguyenLieu->ten_nguyen_lieu,
-                    'ton_kho' => $tonKho,
-                    'de_xuat' => $deXuat,
-                    'don_vi' => $nguyenLieu->don_vi_tinh,
-                ];
-            })
-            ->filter()
-            ->values();
+        if ($deXuat <= 0) {
+            return null;
+        }
+
+        return [
+            'ten' => $nguyenLieu->ten_nguyen_lieu,
+            'ton_kho' => $tonKho,
+            'ton_toi_thieu' => $tonToiThieu,
+            'de_xuat' => $deXuat,
+            'don_vi' => $nguyenLieu->don_vi_tinh,
+        ];
+    })
+    ->filter()
+    ->values();
     }
 }
