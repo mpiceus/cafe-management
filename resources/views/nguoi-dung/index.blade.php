@@ -16,7 +16,6 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Mã</th>
                     <th>Họ tên</th>
                     <th>Tên đăng nhập</th>
                     <th>Chức vụ</th>
@@ -27,7 +26,6 @@
             <tbody>
                 @forelse($nguoiDungs as $nguoiDung)
                     <tr>
-                        <td>{{ $nguoiDung->ma_nguoi_dung }}</td>
                         <td>{{ $nguoiDung->ho_ten }}</td>
                         <td>{{ $nguoiDung->ten_dang_nhap }}</td>
                         <td>{{ str_replace('_', ' ', $nguoiDung->chuc_vu) }}</td>
