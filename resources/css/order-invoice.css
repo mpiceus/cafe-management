@@ -1,0 +1,11 @@
+body { color: #111827; font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; }
+.header { margin-bottom: 16px; text-align: center; }
+.title { font-size: 18px; font-weight: bold; }
+.meta { margin-bottom: 12px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 6px 4px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+th { background: #f9fafb; text-align: left; }
+.text-right { text-align: right; }
+.muted { color: #6b7280; font-size: 11px; }
+.total { font-size: 14px; font-weight: bold; }
+.invoice-thanks { margin-top: 12px; text-align: center; }

@@ -72,7 +72,7 @@
         <input id="hinh_anh_file" name="hinh_anh_file" type="file" accept="image/*" class="form-control @error('hinh_anh_file') is-invalid @enderror">
         @error('hinh_anh_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
         @if($mon->hinh_anh)
-            <div class="mt-3 border rounded overflow-hidden" style="width: 160px; height: 110px;">
+            <div class="mt-3 border rounded overflow-hidden menu-image-preview">
                 <img src="{{ asset('storage/'.$mon->hinh_anh) }}" alt="{{ $mon->ten_mon }}" class="w-100 h-100 object-fit-cover">
             </div>
         @endif

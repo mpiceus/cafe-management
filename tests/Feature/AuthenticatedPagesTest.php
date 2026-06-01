@@ -27,6 +27,11 @@ class AuthenticatedPagesTest extends TestCase
         foreach (['/loai-mon', '/nha-cung-cap', '/mon', '/gia-mon', '/nguyen-lieu', '/don-nhap', '/cong-thuc', '/order', '/order/tao-moi', '/pha-che', '/bao-cao'] as $uri) {
             $this->actingAs($owner)->get($uri)->assertOk();
         }
+
+        $this->actingAs($owner)->get('/bao-cao')
+            ->assertSee('Xu hướng doanh thu')
+            ->assertSee('Gợi ý nhập kho')
+            ->assertSee('report-revenue-chart');
     }
 
     public function test_order_staff_can_open_read_only_catalog_recipe_and_nhap_hang_pages(): void
