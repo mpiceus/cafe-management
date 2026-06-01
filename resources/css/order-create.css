@@ -1,0 +1,84 @@
+.content-main > .container-fluid {
+    height: calc(100vh - 57px);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-top: .75rem !important;
+    padding-bottom: .75rem !important;
+}
+.order-heading {
+    flex: 0 0 auto;
+}
+.order-page-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: calc(100vh - 180px);
+}
+.order-page-shell > [class*="col-"] {
+    min-width: 0;
+    min-height: 0;
+}
+.order-column-card,
+.order-panel {
+    min-height: 0;
+    height: 100%;
+}
+.order-panel-scroll {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding-right: .25rem;
+}
+.menu-item-button {
+    border: 0;
+    background: transparent;
+    padding: 0;
+}
+.menu-item-button:disabled {
+    cursor: not-allowed;
+}
+.menu-placeholder {
+    min-height: 142px;
+    display: grid;
+    place-items: center;
+    background: #eef2f7;
+    color: #64748b;
+    font-weight: 600;
+}
+.order-choice-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+.order-choice-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .22rem .55rem;
+    border: 1px solid #d0d7e2;
+    border-radius: 999px;
+    background: #fff;
+}
+.order-choice-pill input {
+    margin: 0;
+}
+@media (max-width: 1199.98px) {
+    .content-main > .container-fluid {
+        height: auto;
+        display: block;
+        overflow: visible;
+    }
+    .order-column-card {
+        height: auto;
+    }
+    .order-page-shell {
+        height: auto;
+    }
+    .order-panel-scroll {
+        max-height: 480px;
+    }
+}

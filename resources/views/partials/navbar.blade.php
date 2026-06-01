@@ -2,7 +2,7 @@
     <div class="container-fluid px-0">
         <div class="d-flex align-items-center gap-2">
             <button class="btn btn-outline-light btn-sm p-1 d-inline-flex align-items-center justify-content-center" type="button" id="sidebar-toggle" aria-label="Ẩn hiện thanh bên">
-                <span style="line-height: 1; width: 1.1rem;">☰</span>
+                <span class="sidebar-toggle-icon">☰</span>
             </button>
             <span class="navbar-brand mb-0 h1">Ann Coffee</span>
         </div>

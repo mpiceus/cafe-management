@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="min-vh-100 d-flex align-items-center justify-content-center px-3">
-    <div class="card page-card" style="max-width: 420px; width: 100%;">
+    <div class="card page-card auth-card">
         <div class="card-body p-4">
             <h1 class="h4 mb-1">Đăng nhập</h1>
             <p class="text-muted mb-4">Hệ thống quản lý Ann cafe</p>

@@ -67,7 +67,7 @@
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-3">
-                                <div class="bg-light border rounded overflow-hidden" style="width: 58px; height: 58px;">
+                                <div class="bg-light border rounded overflow-hidden menu-thumbnail">
                                     @if($mon->hinh_anh)
                                         <img src="{{ asset('storage/'.$mon->hinh_anh) }}" alt="{{ $mon->ten_mon }}" class="w-100 h-100 object-fit-cover">
                                     @endif

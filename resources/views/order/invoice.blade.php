@@ -3,18 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Hóa đơn #{{ $hoaDon->ma_hoa_don }}</title>
-    <style>
-        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111827; }
-        .header { text-align: center; margin-bottom: 16px; }
-        .title { font-size: 18px; font-weight: bold; }
-        .meta { margin-bottom: 12px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border-bottom: 1px solid #e5e7eb; padding: 6px 4px; vertical-align: top; }
-        th { text-align: left; background: #f9fafb; }
-        .text-right { text-align: right; }
-        .muted { color: #6b7280; font-size: 11px; }
-        .total { font-size: 14px; font-weight: bold; }
-    </style>
+    <link rel="stylesheet" href="{{ resource_path('css/order-invoice.css') }}">
 </head>
 <body>
     <div class="header">
@@ -93,6 +82,6 @@
         </tfoot>
     </table>
 
-    <div class="muted" style="margin-top: 12px; text-align: center;">Cảm ơn quý khách!</div>
+    <div class="muted invoice-thanks">Cảm ơn quý khách!</div>
 </body>
 </html>

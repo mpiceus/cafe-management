@@ -18,7 +18,7 @@
                 <div class="d-flex justify-content-between"><span>Mã hóa đơn</span><strong>#{{ $hoaDon->ma_hoa_don }}</strong></div>
                 <div class="d-flex justify-content-between"><span>Mã thanh toán</span><strong>{{ $paymentCode }}</strong></div>
                 <div class="d-flex justify-content-between"><span>Tổng tiền</span><strong>{{ number_format($hoaDon->tong_tien, 0, ',', '.') }} đ</strong></div>
-                <div class="d-flex justify-content-between"><span>Trạng thái</span><strong id="payment-status">{{ $hoaDon->trang_thai === 'da_thanh_toan' ? 'Đã thanh toán' : 'Chờ thanh toán' }}</strong></div>
+                <div class="d-flex justify-content-between"><span>Trạng thái</span><strong id="payment-status" data-status-url="{{ route('payment.status', $hoaDon, false) }}">{{ $hoaDon->trang_thai === 'da_thanh_toan' ? 'Đã thanh toán' : 'Chờ thanh toán' }}</strong></div>
                 <div class="text-muted small mt-2">Ghi nội dung chuyển khoản chính xác để hệ thống nhận diện.</div>
             </div>
         </div>
@@ -46,61 +46,6 @@
 </div>
 
 @push('scripts')
-<script>
-(() => {
-    const statusNode = document.getElementById('payment-status');
-    const message = document.getElementById('payment-message');
-    const invoiceLink = document.getElementById('invoice-link');
-    const statusUrl = @json(route('payment.status', $hoaDon, false));
-
-    const showMessage = (text, type) => {
-        if (!text) {
-            message.className = 'alert d-none';
-            message.textContent = '';
-            return;
-        }
-
-        message.className = `alert alert-${type}`;
-        message.textContent = text;
-    };
-
-    const updateStatus = async () => {
-        try {
-            const response = await fetch(statusUrl, {
-                headers: {
-                    Accept: 'application/json',
-                    'ngrok-skip-browser-warning': 'true',
-                },
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || 'Không thể kiểm tra thanh toán.');
-            }
-
-            if (data.status === 'da_thanh_toan' || data.status === 'da_hoan_thanh') {
-                statusNode.textContent = 'Đã thanh toán';
-                invoiceLink.classList.remove('d-none');
-                showMessage('Thanh toán đã được xác nhận.', 'success');
-                return true;
-            }
-
-            statusNode.textContent = 'Chờ thanh toán';
-            return false;
-        } catch (error) {
-            showMessage(error.message, 'danger');
-            return false;
-        }
-    };
-
-    let timer = setInterval(async () => {
-        const paid = await updateStatus();
-        if (paid) {
-            clearInterval(timer);
-        }
-    }, 3000);
-
-    updateStatus();
-})();
-</script>
+    <script src="{{ \App\Http\Controllers\ResourceAssetController::url('js', 'payment-checkout.js') }}"></script>
 @endpush
 @endsection

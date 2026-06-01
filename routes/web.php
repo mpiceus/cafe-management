@@ -14,8 +14,14 @@ use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PhaCheController;
+use App\Http\Controllers\ResourceAssetController;
 use App\Models\NguoiDung;
 use Illuminate\Support\Facades\Route;
+
+Route::get('resources-assets/{type}/{file}', ResourceAssetController::class)
+    ->whereIn('type', ['css', 'js'])
+    ->where('file', '[A-Za-z0-9._-]+')
+    ->name('resource.asset');
 
 Route::middleware('guest')->group(function () {
     Route::get('/dang-nhap', [LoginController::class, 'showLoginForm'])->name('login');
