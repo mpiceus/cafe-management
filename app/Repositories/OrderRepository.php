@@ -93,6 +93,8 @@ class OrderRepository implements OrderRepositoryInterface
         $items = $this->gopDongCauHinh($items);
 
         return DB::transaction(function () use ($items, $maNguoiDung, $phuongThuc) {
+            $this->kiemTraGiaVaTonKho($items);
+
             $daThanhToan = $phuongThuc === 'tien_mat';
             $hoaDon = HoaDon::query()->create([
                 'ma_nguoi_dung' => $maNguoiDung,
@@ -195,6 +197,58 @@ class OrderRepository implements OrderRepositoryInterface
                 }
 
                 $nguyenLieu->decrement('ton_kho', $canDung);
+            }
+        }
+    }
+
+    private function kiemTraGiaVaTonKho(array $items): void
+    {
+        $usage = [];
+
+        foreach ($items as $item) {
+            $mon = Mon::query()->with(['giaMoiNhat', 'congThucs'])->findOrFail($item['ma_mon']);
+            if (! $mon->giaMoiNhat) {
+                throw ValidationException::withMessages([
+                    'items' => "Món {$mon->ten_mon} chưa có giá bán.",
+                ]);
+            }
+
+            $soLuong = (int) $item['so_luong'];
+            foreach ($mon->congThucs as $congThuc) {
+                $tiLe = ((int) (($item['tuy_chinh'] ?? [])[$congThuc->ma_nguyen_lieu] ?? 100)) / 100;
+                $usage[$congThuc->ma_nguyen_lieu] = ($usage[$congThuc->ma_nguyen_lieu] ?? 0)
+                    + ((float) $congThuc->so_luong * $soLuong * $tiLe);
+            }
+
+            foreach (($item['toppings'] ?? []) as $topping) {
+                if ((int) ($topping['so_luong'] ?? 0) <= 0) {
+                    continue;
+                }
+
+                $toppingMon = Mon::query()->with('congThucs')->findOrFail($topping['ma_mon']);
+                foreach ($toppingMon->congThucs as $congThuc) {
+                    $usage[$congThuc->ma_nguyen_lieu] = ($usage[$congThuc->ma_nguyen_lieu] ?? 0)
+                        + ((float) $congThuc->so_luong * (int) $topping['so_luong']);
+                }
+            }
+        }
+
+        if (empty($usage)) {
+            return;
+        }
+
+        $nguyenLieus = NguyenLieu::query()
+            ->lockForUpdate()
+            ->whereIn('ma_nguyen_lieu', array_keys($usage))
+            ->get()
+            ->keyBy('ma_nguyen_lieu');
+
+        foreach ($usage as $maNguyenLieu => $canDung) {
+            $nguyenLieu = $nguyenLieus->get($maNguyenLieu);
+            if (! $nguyenLieu || (float) $nguyenLieu->ton_kho < (float) $canDung) {
+                throw ValidationException::withMessages([
+                    'items' => 'Không đủ nguyên liệu '.($nguyenLieu?->ten_nguyen_lieu ?? "#{$maNguyenLieu}").'.',
+                ]);
             }
         }
     }
