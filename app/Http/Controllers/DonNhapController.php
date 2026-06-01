@@ -21,11 +21,12 @@ class DonNhapController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('don-nhap.create', [
             'nhaCungCaps' => $this->service->nhaCungCaps(),
             'nguyenLieus' => $this->service->nguyenLieus(),
+            ...$this->service->duLieuTaoDonNhap($request->only(['ma_nha_cung_cap', 'items'])),
         ]);
     }
 

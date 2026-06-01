@@ -30,7 +30,7 @@ class AuthenticatedPagesTest extends TestCase
 
         $this->actingAs($owner)->get('/bao-cao')
             ->assertSee('Xu hướng doanh thu')
-            ->assertSee('Gợi ý nhập kho')
+            ->assertSee('Trợ lý nhập kho')
             ->assertSee('report-revenue-chart');
     }
 

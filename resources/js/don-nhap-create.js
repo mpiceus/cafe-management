@@ -100,6 +100,7 @@
             hiddenInput.value = '';
             row.querySelector('.ratio-display').value = '';
             row.querySelector('.stock-qty').value = '';
+            row.querySelector('.stock-qty-label').textContent = 'Số lượng nhập kho';
             row.querySelector('.line-total').value = '';
             row.querySelector('.line-total-hidden').value = '';
             row.querySelector('.purchase-unit').innerHTML = '<option value="">Chọn</option>';
@@ -137,7 +138,12 @@
             row.querySelector('.price-label').textContent = `Đơn giá/${getPriceUnitLabel(donViMua)}`;
         }
 
-        row.querySelector('.stock-qty').value = selected && soLuongMua > 0 ? formatDecimal(soLuongNhapKho) : '';
+        row.querySelector('.stock-qty-label').textContent = selected
+            ? `Số lượng nhập kho (${selected.unit})`
+            : 'Số lượng nhập kho';
+        row.querySelector('.stock-qty').value = selected && soLuongMua > 0
+            ? `${formatDecimal(soLuongNhapKho)} ${selected.unit}`
+            : '';
         row.querySelector('.line-total').value = selected && soLuongMua > 0 ? formatMoney(thanhTien) : '';
         row.querySelector('.line-total-hidden').value = selected ? thanhTien.toFixed(2) : '';
         refreshTotal();
@@ -168,7 +174,7 @@
                         <input class="form-control ratio-display" readonly>
                     </div>
                     <div class="col-lg-2">
-                        <label class="form-label">Số lượng nhập kho</label>
+                        <label class="form-label stock-qty-label">Số lượng nhập kho</label>
                         <input class="form-control stock-qty" readonly>
                     </div>
                     <div class="col-lg-3">

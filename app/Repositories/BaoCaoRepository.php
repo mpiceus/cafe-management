@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\ChiTietHoaDon;
 use App\Models\HoaDon;
 use App\Models\NguyenLieu;
+use App\Models\NhaCungCap;
 use App\Repositories\Contracts\BaoCaoRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -40,21 +41,44 @@ class BaoCaoRepository implements BaoCaoRepositoryInterface
             ->groupBy('ma_mon')
             ->orderByDesc('tong_so_luong');
 
-        if ($tuNgay || $denNgay) {
-            $query->whereHas('hoaDon', function ($hoaDonQuery) use ($tuNgay, $denNgay) {
-                $hoaDonQuery->whereIn('trang_thai', [HoaDon::TRANG_THAI_DA_THANH_TOAN, HoaDon::TRANG_THAI_DA_HOAN_THANH]);
+        $query->whereHas('hoaDon', function ($hoaDonQuery) use ($tuNgay, $denNgay) {
+            $hoaDonQuery->whereIn('trang_thai', [HoaDon::TRANG_THAI_DA_THANH_TOAN, HoaDon::TRANG_THAI_DA_HOAN_THANH]);
 
-                if ($tuNgay) {
-                    $hoaDonQuery->whereDate('thoi_gian_tao', '>=', $tuNgay);
-                }
+            if ($tuNgay) {
+                $hoaDonQuery->whereDate('thoi_gian_tao', '>=', $tuNgay);
+            }
 
-                if ($denNgay) {
-                    $hoaDonQuery->whereDate('thoi_gian_tao', '<=', $denNgay);
-                }
-            });
-        }
+            if ($denNgay) {
+                $hoaDonQuery->whereDate('thoi_gian_tao', '<=', $denNgay);
+            }
+        });
 
         return $query->limit(10)->get();
+    }
+
+    public function mucTieuThuMon(string $tuNgay, string $denNgay): Collection
+    {
+        return ChiTietHoaDon::query()
+            ->select('ma_mon', DB::raw('SUM(so_luong) as tong_so_luong'))
+            ->with('mon.congThucs.nguyenLieu')
+            ->whereHas('hoaDon', function ($hoaDonQuery) use ($tuNgay, $denNgay) {
+                $hoaDonQuery
+                    ->whereIn('trang_thai', [HoaDon::TRANG_THAI_DA_THANH_TOAN, HoaDon::TRANG_THAI_DA_HOAN_THANH])
+                    ->whereDate('thoi_gian_tao', '>=', $tuNgay)
+                    ->whereDate('thoi_gian_tao', '<=', $denNgay);
+            })
+            ->groupBy('ma_mon')
+            ->get();
+    }
+
+    public function nguyenLieus(): Collection
+    {
+        return NguyenLieu::query()->with('nhaCungCap')->orderBy('ten_nguyen_lieu')->get();
+    }
+
+    public function nhaCungCaps(): Collection
+    {
+        return NhaCungCap::query()->orderBy('ten_nha_cung_cap')->get();
     }
 
     public function nguyenLieuSapHet(): Collection

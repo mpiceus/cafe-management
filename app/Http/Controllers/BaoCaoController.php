@@ -15,7 +15,14 @@ class BaoCaoController extends Controller
 
     public function index(Request $request): View
     {
-        return view('bao-cao.index', $this->service->duLieu($request->only(['tu_ngay', 'den_ngay'])));
+        return view('bao-cao.index', $this->service->duLieu($request->only([
+            'tu_ngay',
+            'den_ngay',
+            'so_ngay_quan_sat',
+            'so_ngay_du_tru',
+            'ma_nha_cung_cap',
+            'chi_can_nhap',
+        ])));
     }
 
     public function export(Request $request): BinaryFileResponse
