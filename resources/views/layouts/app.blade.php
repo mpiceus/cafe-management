@@ -19,6 +19,11 @@
         .content { min-width: 0; width: 0; flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; }
         .content-main { flex: 1 1 auto; min-height: 0; overflow: auto; }
         .content-main > .container-fluid { max-width: 100%; }
+        .top-navbar, .app-footer { background: #18212f; color: #f8fafc; }
+        .top-navbar .navbar-brand, .top-navbar .navbar-user { color: #f8fafc; }
+        .top-navbar .btn-outline-light { border-color: rgba(248, 250, 252, .72); color: #f8fafc; }
+        .top-navbar .btn-outline-light:hover { background: #f8fafc; color: #18212f; }
+        .app-footer { font-size: .8125rem; border-top: 1px solid rgba(248, 250, 252, .12); }
         .page-card { border: 0; border-radius: 8px; box-shadow: 0 8px 22px rgba(15, 23, 42, .06); }
         .widget-card { border: 0; border-radius: 10px; box-shadow: 0 8px 22px rgba(15, 23, 42, .06); }
         .widget-card.is-disabled { opacity: .6; }
@@ -49,6 +54,9 @@
                 @yield('content')
             </div>
             </main>
+            <footer class="app-footer px-4 py-2 text-center">
+                Ann Coffee · 89 Lò Đúc, Hai Bà Trưng, Hà Nội · &copy; 2026
+            </footer>
         </div>
     </div>
 @else
