@@ -132,12 +132,17 @@ class PaymentController extends Controller
 
     public function history(HoaDon $hoaDon): View
     {
-        $hoaDon->load(['sepayTransactions' => fn ($query) => $query->latest(), 'sepayRefunds' => fn ($query) => $query->latest()]);
+        $hoaDon->load([
+            'nguoiDung',
+            'chiTiets.mon.giaMoiNhat',
+            'chiTiets.toppings.mon.giaMoiNhat',
+            'chiTiets.tuyChinhs.nguyenLieu',
+            'sepayTransactions' => fn ($query) => $query->latest(),
+        ]);
 
         return view('payment.history', [
             'hoaDon' => $hoaDon,
             'transactions' => $hoaDon->sepayTransactions,
-            'refunds' => $hoaDon->sepayRefunds,
         ]);
     }
 

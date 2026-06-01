@@ -71,7 +71,7 @@
                                     <a class="btn btn-outline-success btn-sm" href="{{ route('payment.checkout', $hoaDon) }}">Thanh toán</a>
                                 @endif
                                 @if(auth()->user()->chuc_vu === \App\Models\NguoiDung::CHUC_VU_CHU_CUA_HANG)
-                                    <a class="btn btn-outline-secondary btn-sm" href="{{ route('payment.history', $hoaDon) }}">Lịch sử</a>
+                                    <a class="btn btn-outline-secondary btn-sm" href="{{ route('payment.history', $hoaDon) }}">Chi tiết</a>
                                 @endif
                             </div>
                         </td>
