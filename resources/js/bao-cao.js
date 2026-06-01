@@ -1,4 +1,63 @@
 (() => {
+    const assistantForm = document.getElementById('restock-assistant-form');
+    const assistantFeedback = document.getElementById('restock-assistant-feedback');
+    const selectAll = document.getElementById('restock-select-all');
+    const restockItems = [...document.querySelectorAll('.restock-item')];
+    const defaultAssistantFeedback = 'Chọn các nguyên liệu cùng một nhà cung cấp để tạo đơn nhập.';
+
+    const setAssistantFeedback = (message, isError = false) => {
+        if (!assistantFeedback) {
+            return;
+        }
+
+        assistantFeedback.textContent = message;
+        assistantFeedback.classList.toggle('text-danger', isError);
+    };
+
+    const resetAssistantFeedback = () => {
+        setAssistantFeedback(defaultAssistantFeedback);
+    };
+
+    if (selectAll) {
+        selectAll.addEventListener('change', () => {
+            restockItems.forEach(item => {
+                item.checked = selectAll.checked;
+            });
+            resetAssistantFeedback();
+        });
+    }
+
+    restockItems.forEach(item => {
+        item.addEventListener('change', resetAssistantFeedback);
+    });
+
+    if (assistantForm) {
+        assistantForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const selectedItems = restockItems.filter(item => item.checked);
+
+            if (!selectedItems.length) {
+                setAssistantFeedback('Vui lòng chọn ít nhất một nguyên liệu cần nhập.', true);
+                return;
+            }
+
+            const supplierIds = [...new Set(selectedItems.map(item => item.dataset.supplierId))];
+            if (supplierIds.length !== 1) {
+                setAssistantFeedback('Mỗi đơn nhập chỉ thuộc một nhà cung cấp. Vui lòng chọn các nguyên liệu cùng nhà cung cấp.', true);
+                return;
+            }
+
+            const params = new URLSearchParams({ ma_nha_cung_cap: supplierIds[0] });
+            selectedItems.forEach((item, index) => {
+                params.set(`items[${index}][ma_nguyen_lieu]`, item.dataset.ingredientId);
+                params.set(`items[${index}][so_luong_mua]`, item.dataset.quantity);
+                params.set(`items[${index}][don_vi_mua]`, item.dataset.unit);
+            });
+
+            window.location.href = `${assistantForm.dataset.createUrl}?${params.toString()}`;
+        });
+    }
+
     const dataNode = document.getElementById('report-chart-data');
     const mainCanvas = document.getElementById('report-revenue-chart');
     const rangeSelect = document.getElementById('report-chart-range');
@@ -16,11 +75,6 @@
         progress.style.setProperty('--report-progress', `${Number(progress.dataset.reportProgress || 0)}%`);
     });
 
-    const normalize = values => {
-        const max = Math.max(...values, 1);
-        return values.map(value => Number(value || 0) / max);
-    };
-
     const prepareCanvas = canvas => {
         const ratio = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
@@ -29,29 +83,6 @@
         const context = canvas.getContext('2d');
         context.setTransform(ratio, 0, 0, ratio, 0, 0);
         return { context, width: rect.width, height: rect.height };
-    };
-
-    const drawSparkline = (id, values, color) => {
-        const canvas = document.getElementById(id);
-        if (!canvas) {
-            return;
-        }
-
-        const { context, width, height } = prepareCanvas(canvas);
-        const points = normalize(values.length ? values : [0, 0]);
-        const step = width / Math.max(points.length - 1, 1);
-
-        context.clearRect(0, 0, width, height);
-        context.beginPath();
-        context.strokeStyle = color;
-        context.lineWidth = 2;
-        context.lineJoin = 'round';
-        points.forEach((value, index) => {
-            const x = index * step;
-            const y = height - 3 - (value * (height - 6));
-            index ? context.lineTo(x, y) : context.moveTo(x, y);
-        });
-        context.stroke();
     };
 
     const drawRevenueChart = rows => {
@@ -146,13 +177,6 @@
             }
         });
     };
-
-    const revenueRows = data.daily || [];
-    const values = revenueRows.map(row => Number(row.value || 0));
-    drawSparkline('report-spark-revenue', values, accent);
-    drawSparkline('report-spark-invoices', values.map((value, index) => value ? index + 1 : 0), '#15803d');
-    drawSparkline('report-spark-pending', values.map((value, index) => (index % 2 ? value / 2 : value)), '#d97706');
-    drawSparkline('report-spark-stock', values.map((value, index) => Math.max(0, value - index)), '#64748b');
 
     const renderSelectedRange = () => {
         drawRevenueChart(rangeSelect.value === 'monthly' ? (data.monthly || []) : (data.daily || []));

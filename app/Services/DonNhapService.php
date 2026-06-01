@@ -24,6 +24,45 @@ class DonNhapService
     public function nhaCungCaps(): Collection { return $this->repository->nhaCungCaps(); }
     public function nguyenLieus(): Collection { return $this->repository->nguyenLieus(); }
 
+    public function duLieuTaoDonNhap(array $data): array
+    {
+        $maNhaCungCap = filled($data['ma_nha_cung_cap'] ?? null)
+            ? (int) $data['ma_nha_cung_cap']
+            : null;
+        $nguyenLieus = $this->repository->nguyenLieus()->keyBy('ma_nguyen_lieu');
+
+        $items = collect($data['items'] ?? [])
+            ->map(function ($item) use ($nguyenLieus, $maNhaCungCap) {
+                /** @var NguyenLieu|null $nguyenLieu */
+                $nguyenLieu = $nguyenLieus->get((int) ($item['ma_nguyen_lieu'] ?? 0));
+                $soLuongMua = (float) ($item['so_luong_mua'] ?? 0);
+                $donViMua = (string) ($item['don_vi_mua'] ?? '');
+
+                if (! $nguyenLieu
+                    || ! $maNhaCungCap
+                    || (int) $nguyenLieu->ma_nha_cung_cap !== $maNhaCungCap
+                    || $soLuongMua <= 0
+                    || ! in_array($donViMua, $this->donViMuaHopLe($nguyenLieu), true)) {
+                    return null;
+                }
+
+                return [
+                    'ma_nguyen_lieu' => (int) $nguyenLieu->ma_nguyen_lieu,
+                    'so_luong_mua' => $soLuongMua,
+                    'don_vi_mua' => $donViMua,
+                    'don_gia' => '',
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        return [
+            'prefillSupplierId' => $maNhaCungCap,
+            'prefillItems' => $items,
+        ];
+    }
+
     public function taoDonNhap(array $data, int $maNguoiDung): DonNhap
     {
         $nguyenLieus = $this->repository->nguyenLieus()->keyBy('ma_nguyen_lieu');
@@ -43,7 +82,7 @@ class DonNhapService
                     ]);
                 }
 
-                $donViHopLe = $nguyenLieu->don_vi_tinh === 'g' ? ['g', 'kg'] : ['ml', 'l'];
+                $donViHopLe = $this->donViMuaHopLe($nguyenLieu);
                 if (! in_array($item['don_vi_mua'], $donViHopLe, true)) {
                     throw ValidationException::withMessages([
                         'items' => "Đơn vị mua của {$nguyenLieu->ten_nguyen_lieu} không hợp lệ.",
@@ -85,6 +124,11 @@ class DonNhapService
     private function heSoDonVi(string $donViMua): int
     {
         return in_array($donViMua, ['kg', 'l'], true) ? 1000 : 1;
+    }
+
+    private function donViMuaHopLe(NguyenLieu $nguyenLieu): array
+    {
+        return $nguyenLieu->don_vi_tinh === 'g' ? ['g', 'kg'] : ['ml', 'l'];
     }
 
     private function thanhTien(float $soLuongMua, string $donViMua, float $donGia): float

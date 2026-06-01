@@ -20,10 +20,10 @@
         ])->values(),
     ];
     $summaryCards = [
-        ['label' => 'Doanh thu', 'value' => number_format($tongQuan['doanh_thu'], 0, ',', '.') . ' đ', 'icon' => 'revenue', 'spark' => 'report-spark-revenue', 'tone' => ''],
-        ['label' => 'Số hóa đơn', 'value' => $tongQuan['so_hoa_don'], 'icon' => 'invoice', 'spark' => 'report-spark-invoices', 'tone' => 'is-success'],
-        ['label' => 'Chờ pha chế', 'value' => $tongQuan['hoa_don_cho_pha_che'], 'icon' => 'clock', 'spark' => 'report-spark-pending', 'tone' => 'is-warning'],
-        ['label' => 'Nguyên liệu sắp hết', 'value' => $tongQuan['nguyen_lieu_sap_het'], 'icon' => 'stock', 'spark' => 'report-spark-stock', 'tone' => 'is-warning'],
+        ['label' => 'Doanh thu', 'value' => number_format($tongQuan['doanh_thu'], 0, ',', '.') . ' đ', 'icon' => 'revenue', 'tone' => ''],
+        ['label' => 'Số hóa đơn', 'value' => $tongQuan['so_hoa_don'], 'icon' => 'invoice', 'tone' => 'is-success'],
+        ['label' => 'Chờ pha chế', 'value' => $tongQuan['hoa_don_cho_pha_che'], 'icon' => 'clock', 'tone' => 'is-warning'],
+        ['label' => 'Nguyên liệu sắp hết', 'value' => $tongQuan['nguyen_lieu_sap_het'], 'icon' => 'stock', 'tone' => 'is-warning'],
     ];
 @endphp
 
@@ -83,7 +83,6 @@
                                 @endswitch
                             </div>
                         </div>
-                        <canvas class="report-sparkline" id="{{ $card['spark'] }}"></canvas>
                     </div>
                 </div>
             </div>
@@ -159,38 +158,106 @@
     </div>
 
     <div class="card report-panel mb-3">
-        <div class="card-body pb-0">
-            <div class="d-flex flex-wrap justify-content-between gap-2">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between gap-3 mb-3">
                 <div>
                     <h2 class="report-panel-title">Gợi ý nhập kho</h2>
-                    <div class="report-section-note">Ước tính từ dữ liệu bán hàng {{ $goiYKhoRange['tu_ngay'] }} - {{ $goiYKhoRange['den_ngay'] }}.</div>
+                    <div class="report-section-note">
+                        Ước tính từ dữ liệu bán hàng {{ $goiYKhoRange['tu_ngay'] }} - {{ $goiYKhoRange['den_ngay'] }}.
+                    </div>
                 </div>
             </div>
+
+            <form class="row g-3 align-items-end report-assistant-filter" method="GET">
+                <input type="hidden" name="tu_ngay" value="{{ $filters['tu_ngay'] ?? '' }}">
+                <input type="hidden" name="den_ngay" value="{{ $filters['den_ngay'] ?? '' }}">
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label fw-semibold">Quan sát</label>
+                    <select class="form-select" name="so_ngay_quan_sat">
+                        @foreach([7, 14, 30] as $soNgay)
+                            <option value="{{ $soNgay }}" @selected($goiYKhoFilters['so_ngay_quan_sat'] === $soNgay)>{{ $soNgay }} ngày</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label fw-semibold">Dự trữ</label>
+                    <select class="form-select" name="so_ngay_du_tru">
+                        @foreach([3, 7, 14] as $soNgay)
+                            <option value="{{ $soNgay }}" @selected($goiYKhoFilters['so_ngay_du_tru'] === $soNgay)>{{ $soNgay }} ngày</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <label class="form-label fw-semibold">Nhà cung cấp</label>
+                    <select class="form-select" name="ma_nha_cung_cap">
+                        <option value="">Tất cả nhà cung cấp</option>
+                        @foreach($nhaCungCaps as $ncc)
+                            <option value="{{ $ncc->ma_nha_cung_cap }}" @selected($goiYKhoFilters['ma_nha_cung_cap'] === (int) $ncc->ma_nha_cung_cap)>{{ $ncc->ten_nha_cung_cap }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-7">
+                    <input type="hidden" name="chi_can_nhap" value="0">
+                    <div class="form-check report-assistant-check">
+                        <input class="form-check-input" id="only-needed-stock" type="checkbox" name="chi_can_nhap" value="1" @checked($goiYKhoFilters['chi_can_nhap'])>
+                        <label class="form-check-label" for="only-needed-stock">Chỉ hiển thị mặt hàng cần được nhập</label>
+                    </div>
+                </div>
+                <div class="col-lg-1 col-md-5">
+                    <button class="btn btn-outline-primary report-assistant-submit" type="submit">Cập nhật</button>
+                </div>
+            </form>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover report-table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Nguyên liệu</th>
-                        <th class="text-end">Tồn kho</th>
-                        <th class="text-end">Đề xuất nhập</th>
-                        <th>Đơn vị</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($goiYNhapKho as $row)
+
+        <form id="restock-assistant-form" data-create-url="{{ route('don-nhap.create') }}">
+            <div class="table-responsive">
+                <table class="table table-hover report-table align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td class="fw-semibold">{{ $row['ten'] }}</td>
-                            <td class="text-end">{{ \App\Support\FormatHelper::number($row['ton_kho']) }}</td>
-                            <td class="text-end text-danger fw-semibold">{{ \App\Support\FormatHelper::number($row['de_xuat']) }}</td>
-                            <td>{{ $row['don_vi'] }}</td>
+                            <th class="report-select-column"><input class="form-check-input" id="restock-select-all" type="checkbox" aria-label="Chọn tất cả nguyên liệu cần nhập"></th>
+                            <th>Nguyên liệu</th>
+                            <th>Nhà cung cấp</th>
+                            <th>Ưu tiên</th>
+                            <th class="text-end">Tồn / tối thiểu</th>
+                            <th class="text-end">Tiêu thụ TB/ngày</th>
+                            <th class="text-end">Còn lại</th>
+                            <th class="text-end">Đề xuất nhập</th>
                         </tr>
-                    @empty
-                        <tr><td colspan="4" class="text-center text-muted py-4">Chưa có đề xuất nhập kho.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @forelse($goiYNhapKho as $row)
+                            <tr>
+                                <td>
+                                    @if($row['de_xuat'] > 0 && $row['ma_nha_cung_cap'])
+                                        <input
+                                            class="form-check-input restock-item"
+                                            type="checkbox"
+                                            data-ingredient-id="{{ $row['ma_nguyen_lieu'] }}"
+                                            data-supplier-id="{{ $row['ma_nha_cung_cap'] }}"
+                                            data-quantity="{{ $row['so_luong_mua'] }}"
+                                            data-unit="{{ $row['don_vi_mua'] }}"
+                                            aria-label="Chọn {{ $row['ten'] }}">
+                                    @endif
+                                </td>
+                                <td class="fw-semibold">{{ $row['ten'] }}</td>
+                                <td>{{ $row['nha_cung_cap'] }}</td>
+                                <td><span class="report-priority is-{{ $row['muc_uu_tien'] }}">{{ $row['nhan_uu_tien'] }}</span></td>
+                                <td class="text-end">{{ \App\Support\FormatHelper::number($row['ton_kho']) }} / {{ \App\Support\FormatHelper::number($row['ton_toi_thieu']) }} {{ $row['don_vi'] }}</td>
+                                <td class="text-end">{{ \App\Support\FormatHelper::number($row['tieu_thu_trung_binh_ngay']) }} {{ $row['don_vi'] }}</td>
+                                <td class="text-end">{{ $row['so_ngay_con_lai'] === null ? 'Chưa xác định' : \App\Support\FormatHelper::number($row['so_ngay_con_lai']) . ' ngày' }}</td>
+                                <td class="text-end text-danger fw-semibold">{{ \App\Support\FormatHelper::number($row['de_xuat']) }} {{ $row['don_vi'] }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="8" class="text-center text-muted py-4">Không có nguyên liệu phù hợp với bộ lọc.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="report-assistant-actions">
+                <div class="report-section-note" id="restock-assistant-feedback">Chọn các nguyên liệu cùng một nhà cung cấp để tạo đơn nhập.</div>
+                <button class="btn btn-primary" type="submit">Tạo đơn nhập từ mục đã chọn</button>
+            </div>
+        </form>
     </div>
 </div>
 
