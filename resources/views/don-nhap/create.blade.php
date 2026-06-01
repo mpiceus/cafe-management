@@ -17,7 +17,7 @@
                 <select class="form-select @error('ma_nha_cung_cap') is-invalid @enderror" id="supplier-select" name="ma_nha_cung_cap">
                     <option value="">Chọn nhà cung cấp</option>
                     @foreach($nhaCungCaps as $ncc)
-                        <option value="{{ $ncc->ma_nha_cung_cap }}" @selected(old('ma_nha_cung_cap') == $ncc->ma_nha_cung_cap)>{{ $ncc->ten_nha_cung_cap }}</option>
+                        <option value="{{ $ncc->ma_nha_cung_cap }}" @selected(old('ma_nha_cung_cap', $prefillSupplierId ?? '') == $ncc->ma_nha_cung_cap)>{{ $ncc->ten_nha_cung_cap }}</option>
                     @endforeach
                 </select>
                 @error('ma_nha_cung_cap')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -57,7 +57,7 @@
 @endphp
 
 <script type="application/json" id="purchase-ingredient-data">@json($nguyenLieuOptions)</script>
-<script type="application/json" id="purchase-initial-rows">@json(array_values(old('items', [])))</script>
+<script type="application/json" id="purchase-initial-rows">@json(array_values(old('items', $prefillItems ?? [])))</script>
 
 @push('scripts')
     <script src="{{ \App\Http\Controllers\ResourceAssetController::url('js', 'don-nhap-create.js') }}"></script>
