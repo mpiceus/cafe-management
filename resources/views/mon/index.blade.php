@@ -17,7 +17,7 @@
 <div class="card page-card mb-3">
     <div class="card-body">
         <form class="row g-3 align-items-end" method="GET" action="{{ route('mon.index') }}">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label" for="tu_khoa">Tìm kiếm món</label>
                 <input id="tu_khoa" name="tu_khoa" class="form-control" value="{{ $filters['tu_khoa'] ?? '' }}" placeholder="Tên món">
             </div>
@@ -37,6 +37,12 @@
                     <option value="{{ \App\Models\Mon::TRANG_THAI_DANG_BAN }}" @selected(($filters['trang_thai'] ?? '') === \App\Models\Mon::TRANG_THAI_DANG_BAN)>Đang bán</option>
                     <option value="{{ \App\Models\Mon::TRANG_THAI_DUNG_BAN }}" @selected(($filters['trang_thai'] ?? '') === \App\Models\Mon::TRANG_THAI_DUNG_BAN)>Dừng bán</option>
                 </select>
+            </div>
+            <div class="col-md-1">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="hien_tat_ca" name="hien_tat_ca" value="1" @checked(($filters['hien_tat_ca'] ?? '') === '1')>
+                    <label class="form-check-label" for="hien_tat_ca">Hiện tất cả</label>
+                </div>
             </div>
             <div class="col-md-2 d-grid">
                 <button class="btn btn-outline-primary" type="submit">Lọc</button>
@@ -99,13 +105,14 @@
                         </td>
                         @if($canManage)
                             <td class="text-end">
-                                <div class="d-inline-flex gap-2">
+                                <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                                     <a class="btn btn-outline-primary btn-sm" href="{{ route('mon.edit', $mon) }}">Sửa</a>
                                     <form method="POST" action="{{ route('mon.toggle-status', $mon) }}">
                                         @csrf
                                         @method('PATCH')
                                         <button class="btn btn-outline-secondary btn-sm" type="submit">{{ $mon->dangBan() ? 'Dừng bán' : 'Bán lại' }}</button>
                                     </form>
+                                    <button class="btn btn-outline-danger btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#deleteMon{{ $mon->ma_mon }}">Xóa</button>
                                 </div>
                             </td>
                         @endif
@@ -120,4 +127,36 @@
     </div>
     <div class="card-footer bg-white">{{ $mons->links() }}</div>
 </div>
+
+@if($canManage)
+    @foreach($mons as $mon)
+        <div class="modal fade" id="deleteMon{{ $mon->ma_mon }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xóa món</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if($mon->co_the_xoa)
+                            Xóa <strong>{{ $mon->ten_mon }}</strong> sẽ xóa cả công thức và lịch sử giá của món này. Hành động này chỉ thực hiện được khi món chưa từng được bán.
+                        @else
+                            {{ $mon->ly_do_khong_xoa }}
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                        @if($mon->co_the_xoa)
+                            <form method="POST" action="{{ route('mon.destroy', $mon) }}">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-danger" type="submit">Xóa</button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+@endif
 @endsection

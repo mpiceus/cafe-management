@@ -62,6 +62,11 @@ class NguyenLieuRepository implements NguyenLieuRepositoryInterface
         return $nguyenLieu->refresh();
     }
 
+    public function delete(NguyenLieu $nguyenLieu): void
+    {
+        $nguyenLieu->delete();
+    }
+
     public function allForSearch(): Collection
     {
         return NguyenLieu::query()->with('nhaCungCap')->get();

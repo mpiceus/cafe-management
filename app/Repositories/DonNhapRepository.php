@@ -64,7 +64,11 @@ class DonNhapRepository implements DonNhapRepositoryInterface
 
     public function nguyenLieus(): Collection
     {
-        return NguyenLieu::query()->with('nhaCungCap')->orderBy('ten_nguyen_lieu')->get();
+        return NguyenLieu::query()
+            ->with('nhaCungCap')
+            ->where('duoc_su_dung', true)
+            ->orderBy('ten_nguyen_lieu')
+            ->get();
     }
 
     public function createWithDetails(array $data, array $items): DonNhap

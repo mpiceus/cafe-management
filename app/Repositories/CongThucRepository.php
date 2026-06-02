@@ -38,7 +38,10 @@ class CongThucRepository implements CongThucRepositoryInterface
 
     public function nguyenLieus(): Collection
     {
-        return NguyenLieu::query()->orderBy('ten_nguyen_lieu')->get();
+        return NguyenLieu::query()
+            ->where('duoc_su_dung', true)
+            ->orderBy('ten_nguyen_lieu')
+            ->get();
     }
 
     public function congThuc(Mon $mon): Collection

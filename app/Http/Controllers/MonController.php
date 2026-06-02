@@ -8,6 +8,7 @@ use App\Models\Mon;
 use App\Services\MonService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class MonController extends Controller
@@ -19,7 +20,11 @@ class MonController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['tu_khoa', 'ma_loai_mon', 'trang_thai']);
+        $filters = $request->only(['tu_khoa', 'ma_loai_mon', 'trang_thai', 'hien_tat_ca']);
+
+        if (($filters['hien_tat_ca'] ?? null) !== '1' && empty($filters['trang_thai'])) {
+            $filters['trang_thai'] = Mon::TRANG_THAI_DANG_BAN;
+        }
 
         return view('mon.index', [
             'mons' => $this->monService->danhSach($filters),
@@ -76,5 +81,16 @@ class MonController extends Controller
         return redirect()
             ->route('mon.index')
             ->with('success', 'Đã cập nhật trạng thái món.');
+    }
+
+    public function destroy(Mon $mon): RedirectResponse
+    {
+        try {
+            $this->monService->xoa($mon);
+        } catch (ValidationException $exception) {
+            return back()->with('error', $exception->errors()['mon'][0] ?? $exception->getMessage());
+        }
+
+        return redirect()->route('mon.index')->with('success', 'Đã xóa món.');
     }
 }

@@ -6,6 +6,7 @@ use App\Models\LoaiMon;
 use App\Repositories\Contracts\LoaiMonRepositoryInterface;
 use App\Support\TextNormalizer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class LoaiMonService
@@ -14,7 +15,17 @@ class LoaiMonService
 
     public function danhSach(array $filters = []): LengthAwarePaginator
     {
-        return $this->repository->paginate($filters);
+        $loaiMons = $this->repository->paginate($filters);
+
+        $loaiMons->getCollection()->transform(function (LoaiMon $loaiMon) {
+            $coMon = $loaiMon->mons()->exists();
+            $loaiMon->setAttribute('co_the_xoa', ! $coMon);
+            $loaiMon->setAttribute('ly_do_khong_xoa', $coMon ? 'Loại món vẫn còn món thuộc loại này.' : null);
+
+            return $loaiMon;
+        });
+
+        return $loaiMons;
     }
 
     public function taoMoi(array $data): LoaiMon
@@ -29,6 +40,19 @@ class LoaiMonService
         $this->assertUniqueTen($data['ten_loai_mon'], $loaiMon->ma_loai_mon);
 
         return $this->repository->update($loaiMon, $data);
+    }
+
+    public function xoa(LoaiMon $loaiMon): void
+    {
+        DB::transaction(function () use ($loaiMon) {
+            if ($loaiMon->mons()->exists()) {
+                throw ValidationException::withMessages([
+                    'loai_mon' => 'Loại món vẫn còn món thuộc loại này.',
+                ]);
+            }
+
+            $this->repository->delete($loaiMon);
+        });
     }
 
     private function assertUniqueTen(string $ten, ?int $ignoreId = null): void

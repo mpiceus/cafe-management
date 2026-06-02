@@ -84,6 +84,7 @@ class OrderRepository implements OrderRepositoryInterface
     {
         return NguyenLieu::query()
             ->where('duoc_tuy_chinh', true)
+            ->where('duoc_su_dung', true)
             ->orderBy('ten_nguyen_lieu')
             ->get();
     }

@@ -25,6 +25,7 @@ class MonService
         $mons = $this->monRepository->paginate($filters, $perPage);
 
         $mons->getCollection()->transform(function (Mon $mon) {
+            $daTungBan = $mon->chiTietHoaDons()->exists() || $mon->chiTietToppings()->exists();
             $tamHetNguyenLieus = $mon->congThucs
                 ->filter(fn ($congThuc) => (float) $congThuc->nguyenLieu?->ton_kho < (float) $congThuc->so_luong)
                 ->map(fn ($congThuc) => $congThuc->nguyenLieu?->ten_nguyen_lieu)
@@ -33,6 +34,8 @@ class MonService
 
             $mon->setAttribute('tam_het', $tamHetNguyenLieus->isNotEmpty());
             $mon->setAttribute('tam_het_nguyen_lieus', $tamHetNguyenLieus);
+            $mon->setAttribute('co_the_xoa', ! $daTungBan);
+            $mon->setAttribute('ly_do_khong_xoa', $daTungBan ? "Món đã từng được bán; chọn 'Dừng bán' để ẩn khỏi bán." : null);
 
             return $mon;
         });
@@ -95,6 +98,26 @@ class MonService
             : Mon::TRANG_THAI_DANG_BAN;
 
         return $this->monRepository->update($mon, ['trang_thai' => $trangThai]);
+    }
+
+    public function xoa(Mon $mon): void
+    {
+        DB::transaction(function () use ($mon) {
+            if ($mon->chiTietHoaDons()->exists() || $mon->chiTietToppings()->exists()) {
+                throw ValidationException::withMessages([
+                    'mon' => "Món đã từng được bán; chọn 'Dừng bán' để ẩn khỏi bán.",
+                ]);
+            }
+
+            $mon->giaMons()->delete();
+            $mon->congThucs()->delete();
+
+            if ($mon->hinh_anh) {
+                Storage::disk('public')->delete($mon->hinh_anh);
+            }
+
+            $this->monRepository->delete($mon);
+        });
     }
 
     private function assertUniqueTenMon(string $tenMon, ?int $ignoreId = null): void

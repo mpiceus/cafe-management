@@ -13,5 +13,6 @@ interface NguyenLieuRepositoryInterface
     public function all(): Collection;
     public function create(array $data): NguyenLieu;
     public function update(NguyenLieu $nguyenLieu, array $data): NguyenLieu;
+    public function delete(NguyenLieu $nguyenLieu): void;
     public function allForSearch(): Collection;
 }

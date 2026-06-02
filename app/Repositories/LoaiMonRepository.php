@@ -50,6 +50,11 @@ class LoaiMonRepository implements LoaiMonRepositoryInterface
         return $loaiMon->refresh();
     }
 
+    public function delete(LoaiMon $loaiMon): void
+    {
+        $loaiMon->delete();
+    }
+
     public function allForSearch(): Collection
     {
         return LoaiMon::query()->get();

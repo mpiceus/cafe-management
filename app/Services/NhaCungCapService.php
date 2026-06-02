@@ -6,6 +6,7 @@ use App\Models\NhaCungCap;
 use App\Repositories\Contracts\NhaCungCapRepositoryInterface;
 use App\Support\TextNormalizer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class NhaCungCapService
@@ -14,7 +15,17 @@ class NhaCungCapService
 
     public function danhSach(array $filters = []): LengthAwarePaginator
     {
-        return $this->repository->paginate($filters);
+        $nhaCungCaps = $this->repository->paginate($filters);
+
+        $nhaCungCaps->getCollection()->transform(function (NhaCungCap $nhaCungCap) {
+            $coPhuThuoc = $nhaCungCap->donNhaps()->exists() || $nhaCungCap->nguyenLieus()->exists();
+            $nhaCungCap->setAttribute('co_the_xoa', ! $coPhuThuoc);
+            $nhaCungCap->setAttribute('ly_do_khong_xoa', $coPhuThuoc ? 'Nhà cung cấp đã phát sinh nguyên liệu hoặc đơn nhập.' : null);
+
+            return $nhaCungCap;
+        });
+
+        return $nhaCungCaps;
     }
 
     public function taoMoi(array $data): NhaCungCap
@@ -33,13 +44,15 @@ class NhaCungCapService
 
     public function xoa(NhaCungCap $nhaCungCap): void
     {
-        if ($nhaCungCap->nguyenLieus()->exists() || $nhaCungCap->donNhaps()->exists()) {
-            throw ValidationException::withMessages([
-                'nha_cung_cap' => 'Không thể xóa nhà cung cấp đã phát sinh nguyên liệu hoặc đơn nhập.',
-            ]);
-        }
+        DB::transaction(function () use ($nhaCungCap) {
+            if ($nhaCungCap->donNhaps()->exists() || $nhaCungCap->nguyenLieus()->exists()) {
+                throw ValidationException::withMessages([
+                    'nha_cung_cap' => 'Không thể xóa nhà cung cấp đã phát sinh nguyên liệu hoặc đơn nhập.',
+                ]);
+            }
 
-        $this->repository->delete($nhaCungCap);
+            $this->repository->delete($nhaCungCap);
+        });
     }
 
     private function assertUniqueTen(string $ten, ?int $ignoreId = null): void

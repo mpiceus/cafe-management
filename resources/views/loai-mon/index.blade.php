@@ -43,8 +43,8 @@
             <tbody>
                 @forelse($loaiMons as $loaiMon)
                     <tr>
-                        <td class="fw-semibold">
-                            <a href="{{ route('mon.index', ['ma_loai_mon' => $loaiMon->ma_loai_mon]) }}" class="text-decoration-none">
+                        <td>
+                            <a href="{{ route('mon.index', ['ma_loai_mon' => $loaiMon->ma_loai_mon]) }}" class="fw-semibold text-decoration-none">
                                 {{ $loaiMon->ten_loai_mon }}
                             </a>
                         </td>
@@ -56,7 +56,10 @@
                         </td>
                         @if($canManage)
                             <td class="text-end">
-                                <a class="btn btn-outline-primary btn-sm" href="{{ route('loai-mon.edit', $loaiMon) }}">Sửa</a>
+                                <div class="d-inline-flex gap-2">
+                                    <a class="btn btn-outline-primary btn-sm" href="{{ route('loai-mon.edit', $loaiMon) }}">Sửa</a>
+                                    <button class="btn btn-outline-danger btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#deleteLoaiMon{{ $loaiMon->ma_loai_mon }}">Xóa</button>
+                                </div>
                             </td>
                         @endif
                     </tr>
@@ -70,4 +73,36 @@
     </div>
     <div class="card-footer bg-white">{{ $loaiMons->links() }}</div>
 </div>
+
+@if($canManage)
+    @foreach($loaiMons as $loaiMon)
+        <div class="modal fade" id="deleteLoaiMon{{ $loaiMon->ma_loai_mon }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xóa loại món</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if($loaiMon->co_the_xoa)
+                            Xóa <strong>{{ $loaiMon->ten_loai_mon }}</strong>. Chỉ loại món chưa có món nào thuộc loại này mới được xóa.
+                        @else
+                            {{ $loaiMon->ly_do_khong_xoa }}
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                        @if($loaiMon->co_the_xoa)
+                            <form method="POST" action="{{ route('loai-mon.destroy', $loaiMon) }}">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-danger" type="submit">Xóa</button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+@endif
 @endsection

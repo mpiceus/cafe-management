@@ -16,6 +16,8 @@ interface MonRepositoryInterface
 
     public function update(Mon $mon, array $data): Mon;
 
+    public function delete(Mon $mon): void;
+
     public function loaiMons(): Collection;
 
     public function allForSearch(): Collection;
