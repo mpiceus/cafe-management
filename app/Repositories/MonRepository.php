@@ -69,6 +69,11 @@ class MonRepository implements MonRepositoryInterface
         return $mon->refresh();
     }
 
+    public function delete(Mon $mon): void
+    {
+        $mon->delete();
+    }
+
     public function loaiMons(): Collection
     {
         return LoaiMon::query()

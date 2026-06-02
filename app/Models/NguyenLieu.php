@@ -20,6 +20,7 @@ class NguyenLieu extends Model
         'ma_nha_cung_cap',
         'ti_le_su_dung',
         'duoc_tuy_chinh',
+        'duoc_su_dung',
     ];
 
     protected function casts(): array
@@ -29,6 +30,7 @@ class NguyenLieu extends Model
             'so_luong_toi_thieu' => 'decimal:2',
             'ti_le_su_dung' => 'decimal:2',
             'duoc_tuy_chinh' => 'boolean',
+            'duoc_su_dung' => 'boolean',
         ];
     }
 
@@ -40,5 +42,15 @@ class NguyenLieu extends Model
     public function congThucs(): HasMany
     {
         return $this->hasMany(CongThuc::class, 'ma_nguyen_lieu', 'ma_nguyen_lieu');
+    }
+
+    public function chiTietTuyChinhs(): HasMany
+    {
+        return $this->hasMany(ChiTietTuyChinh::class, 'ma_nguyen_lieu', 'ma_nguyen_lieu');
+    }
+
+    public function chiTietDonNhaps(): HasMany
+    {
+        return $this->hasMany(ChiTietDonNhap::class, 'ma_nguyen_lieu', 'ma_nguyen_lieu');
     }
 }

@@ -14,5 +14,7 @@ interface LoaiMonRepositoryInterface
 
     public function update(LoaiMon $loaiMon, array $data): LoaiMon;
 
+    public function delete(LoaiMon $loaiMon): void;
+
     public function allForSearch(): Collection;
 }

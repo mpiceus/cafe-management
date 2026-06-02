@@ -55,6 +55,16 @@ class Mon extends Model
         return $this->hasMany(CongThuc::class, 'ma_mon', 'ma_mon');
     }
 
+    public function chiTietHoaDons(): HasMany
+    {
+        return $this->hasMany(ChiTietHoaDon::class, 'ma_mon', 'ma_mon');
+    }
+
+    public function chiTietToppings(): HasMany
+    {
+        return $this->hasMany(ChiTietTopping::class, 'ma_mon', 'ma_mon');
+    }
+
     public function giaMoiNhat(): HasOne
     {
         return $this->hasOne(GiaMon::class, 'ma_mon', 'ma_mon')->latestOfMany('ngay_ap_dung');

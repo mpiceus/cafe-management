@@ -8,6 +8,7 @@ use App\Models\NguyenLieu;
 use App\Services\NguyenLieuService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class NguyenLieuController extends Controller
@@ -50,5 +51,23 @@ class NguyenLieuController extends Controller
         $this->service->capNhat($nguyenLieu, $request->validated());
 
         return redirect()->route('nguyen-lieu.index')->with('success', 'Đã cập nhật nguyên liệu.');
+    }
+
+    public function destroy(NguyenLieu $nguyenLieu): RedirectResponse
+    {
+        try {
+            $this->service->xoa($nguyenLieu);
+        } catch (ValidationException $exception) {
+            return back()->with('error', $exception->errors()['nguyen_lieu'][0] ?? $exception->getMessage());
+        }
+
+        return redirect()->route('nguyen-lieu.index')->with('success', 'Đã xóa nguyên liệu.');
+    }
+
+    public function stopUsing(NguyenLieu $nguyenLieu): RedirectResponse
+    {
+        $this->service->ngungSuDung($nguyenLieu);
+
+        return redirect()->route('nguyen-lieu.index')->with('success', 'Đã ngừng sử dụng nguyên liệu.');
     }
 }

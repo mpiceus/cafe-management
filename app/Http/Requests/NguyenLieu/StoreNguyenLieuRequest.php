@@ -18,6 +18,7 @@ class StoreNguyenLieuRequest extends FormRequest
             'ma_nha_cung_cap' => ['required', 'exists:nha_cung_cap,ma_nha_cung_cap'],
             'ti_le_su_dung' => ['required', 'numeric', 'min:0.01', 'max:1'],
             'duoc_tuy_chinh' => ['nullable', 'boolean'],
+            'duoc_su_dung' => ['nullable', 'boolean'],
         ];
     }
 }

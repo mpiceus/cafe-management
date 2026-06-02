@@ -59,6 +59,9 @@ Route::middleware('auth')->group(function () {
     Route::put('loai-mon/{loaiMon}', [LoaiMonController::class, 'update'])
         ->name('loai-mon.update')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::delete('loai-mon/{loaiMon}', [LoaiMonController::class, 'destroy'])
+        ->name('loai-mon.destroy')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
 
     Route::get('nha-cung-cap', [NhaCungCapController::class, 'index'])
         ->name('nha-cung-cap.index')
@@ -97,6 +100,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('mon/{mon}/doi-trang-thai', [MonController::class, 'toggleStatus'])
         ->name('mon.toggle-status')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::delete('mon/{mon}', [MonController::class, 'destroy'])
+        ->name('mon.destroy')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
 
     Route::get('gia-mon', [GiaMonController::class, 'index'])
         ->name('gia-mon.index')
@@ -125,6 +131,12 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
     Route::put('nguyen-lieu/{nguyenLieu}', [NguyenLieuController::class, 'update'])
         ->name('nguyen-lieu.update')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::delete('nguyen-lieu/{nguyenLieu}', [NguyenLieuController::class, 'destroy'])
+        ->name('nguyen-lieu.destroy')
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+    Route::patch('nguyen-lieu/{nguyenLieu}/ngung-su-dung', [NguyenLieuController::class, 'stopUsing'])
+        ->name('nguyen-lieu.stop-using')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
 
     Route::resource('don-nhap', DonNhapController::class)

@@ -45,7 +45,9 @@
             <tbody>
                 @forelse($nhaCungCaps as $nhaCungCap)
                     <tr>
-                        <td class="fw-semibold">{{ $nhaCungCap->ten_nha_cung_cap }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ $nhaCungCap->ten_nha_cung_cap }}</div>
+                        </td>
                         <td>{{ $nhaCungCap->so_dien_thoai ?: '-' }}</td>
                         <td>{{ $nhaCungCap->email ?: '-' }}</td>
                         <td>{{ $nhaCungCap->dia_chi ?: '-' }}</td>
@@ -57,7 +59,7 @@
                             <td class="text-end">
                                 <div class="d-inline-flex gap-2">
                                     <a class="btn btn-outline-primary btn-sm" href="{{ route('nha-cung-cap.edit', $nhaCungCap) }}">Sửa</a>
-                    
+                                    <button class="btn btn-outline-danger btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#deleteNhaCungCap{{ $nhaCungCap->ma_nha_cung_cap }}">Xóa</button>
                                 </div>
                             </td>
                         @endif
@@ -72,4 +74,36 @@
     </div>
     <div class="card-footer bg-white">{{ $nhaCungCaps->links() }}</div>
 </div>
+
+@if($canManage)
+    @foreach($nhaCungCaps as $nhaCungCap)
+        <div class="modal fade" id="deleteNhaCungCap{{ $nhaCungCap->ma_nha_cung_cap }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xóa nhà cung cấp</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if($nhaCungCap->co_the_xoa)
+                            Xóa <strong>{{ $nhaCungCap->ten_nha_cung_cap }}</strong>. Hành động này chỉ thực hiện được khi nhà cung cấp chưa có nguyên liệu hoặc đơn nhập liên quan.
+                        @else
+                            {{ $nhaCungCap->ly_do_khong_xoa }}
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                        @if($nhaCungCap->co_the_xoa)
+                            <form method="POST" action="{{ route('nha-cung-cap.destroy', $nhaCungCap) }}">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-danger" type="submit">Xóa</button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+@endif
 @endsection

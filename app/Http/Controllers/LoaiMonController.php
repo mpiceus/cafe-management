@@ -8,6 +8,7 @@ use App\Models\LoaiMon;
 use App\Services\LoaiMonService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class LoaiMonController extends Controller
@@ -50,5 +51,16 @@ class LoaiMonController extends Controller
         $this->service->capNhat($loaiMon, $request->validated());
 
         return redirect()->route('loai-mon.index')->with('success', 'Đã cập nhật loại món.');
+    }
+
+    public function destroy(LoaiMon $loaiMon): RedirectResponse
+    {
+        try {
+            $this->service->xoa($loaiMon);
+        } catch (ValidationException $exception) {
+            return back()->with('error', $exception->errors()['loai_mon'][0] ?? $exception->getMessage());
+        }
+
+        return redirect()->route('loai-mon.index')->with('success', 'Đã xóa loại món.');
     }
 }

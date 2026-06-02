@@ -30,5 +30,12 @@
             <label class="form-check-label">Được tùy chỉnh</label>
         </div>
     </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <div class="form-check form-switch mb-2">
+            <input type="hidden" name="duoc_su_dung" value="0">
+            <input class="form-check-input" type="checkbox" name="duoc_su_dung" value="1" @checked(old('duoc_su_dung', $nguyenLieu->duoc_su_dung ?? true))>
+            <label class="form-check-label">Được sử dụng</label>
+        </div>
+    </div>
 </div>
 <hr class="my-4">
