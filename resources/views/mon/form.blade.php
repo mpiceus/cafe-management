@@ -53,13 +53,13 @@
         </select>
     </div>
 
-    <div class="col-md-4 d-flex align-items-end">
+    <!-- <div class="col-md-4 d-flex align-items-end"> 
         <div class="form-check form-switch mb-2">
             <input type="hidden" name="cho_them_topping" value="0">
             <input class="form-check-input" type="checkbox" role="switch" id="cho_them_topping" name="cho_them_topping" value="1" @checked(old('cho_them_topping', $mon->cho_them_topping))>
             <label class="form-check-label" for="cho_them_topping">Cho thêm topping</label>
         </div>
-    </div>
+    </div>-->
 
     <div class="col-md-8">
         <label class="form-label" for="mo_ta">Mô tả</label>

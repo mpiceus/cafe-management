@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LoaiMon extends Model
 {
+    public const MA_TOPPING = 5;
+
     protected $table = 'loai_mon';
 
     protected $primaryKey = 'ma_loai_mon';

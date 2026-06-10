@@ -17,6 +17,7 @@ use App\Http\Controllers\PhaCheController;
 use App\Http\Controllers\ResourceAssetController;
 use App\Models\NguoiDung;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AiMonitorController;
 
 Route::get('resources-assets/{type}/{file}', ResourceAssetController::class)
     ->whereIn('type', ['css', 'js'])
@@ -177,7 +178,7 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER);
     Route::get('payment/{hoaDon}/history', [PaymentController::class, 'history'])
         ->name('payment.history')
-        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+        ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG.','.NguoiDung::CHUC_VU_NHAN_VIEN_ORDER);
     Route::post('payment/{hoaDon}/refund', [PaymentController::class, 'refund'])
         ->name('payment.refund')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
@@ -198,4 +199,19 @@ Route::middleware('auth')->group(function () {
     Route::get('bao-cao/export', [BaoCaoController::class, 'export'])
         ->name('bao-cao.export')
         ->middleware('role:'.NguoiDung::CHUC_VU_CHU_CUA_HANG);
+
+    Route::get(
+        '/ai-monitor',
+        [AiMonitorController::class, 'index']
+    )->name('ai-monitor.index');
+
+    Route::post(
+        '/ai-monitor/upload',
+        [AiMonitorController::class, 'upload']
+    )->name('ai-monitor.upload');
+
+    Route::post(
+        '/ai-monitor/reset',
+        [AiMonitorController::class, 'reset']
+    )->name('ai-monitor.reset');
 });

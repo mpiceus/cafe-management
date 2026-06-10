@@ -5,11 +5,7 @@
 @section('content')
 @php
     $paymentLabel = $hoaDon->phuong_thuc_thanh_toan === 'chuyen_khoan' ? 'Chuyển khoản' : 'Tiền mặt';
-    $statusLabel = [
-        'dang_tao' => 'Chờ thanh toán',
-        'da_thanh_toan' => 'Đã thanh toán',
-        'da_hoan_thanh' => 'Đã hoàn thành',
-    ][$hoaDon->trang_thai] ?? $hoaDon->trang_thai;
+    $statusLabel = $hoaDon->trangThaiHienThi();
 @endphp
 
 <div class="d-flex justify-content-between align-items-center mb-3">

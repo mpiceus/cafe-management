@@ -157,7 +157,7 @@
         </div>
     </div>
 
-    <div class="card report-panel mb-3">
+    <!-- <div class="card report-panel mb-3">
         <div class="card-body">
             <div class="d-flex flex-wrap justify-content-between gap-3 mb-3">
                 <div>
@@ -258,7 +258,7 @@
                 <button class="btn btn-primary" type="submit">Tạo đơn nhập từ mục đã chọn</button>
             </div>
         </form>
-    </div>
+    </div>-->
 </div>
 
 <script type="application/json" id="report-chart-data">@json($chartData)</script>

@@ -33,8 +33,6 @@ class OrderController extends Controller
     public function create(): View
     {
         $mons = $this->service->monsDangBan()->values();
-        $toppings = $this->service->toppingsDangBan()->values();
-
         $menuData = $mons->map(function ($mon) {
             return [
                 'id' => $mon->ma_mon,
@@ -44,7 +42,7 @@ class OrderController extends Controller
                 'category_id' => $mon->ma_loai_mon,
                 'category_name' => $mon->loaiMon?->ten_loai_mon,
                 'service_mode' => $mon->che_do_phuc_vu,
-                'allow_topping' => (bool) $mon->cho_them_topping,
+                'allow_topping' => false,
                 'recipe' => $mon->congThucs->map(function ($row) {
                     return [
                         'ingredient_id' => $row->ma_nguyen_lieu,
@@ -57,25 +55,8 @@ class OrderController extends Controller
             ];
         })->values();
 
-        $toppingData = $toppings->map(function ($mon) {
-            return [
-                'id' => $mon->ma_mon,
-                'name' => $mon->ten_mon,
-                'price' => (float) ($mon->giaMoiNhat?->gia ?? 0),
-                'recipe' => $mon->congThucs->map(function ($row) {
-                    return [
-                        'ingredient_id' => $row->ma_nguyen_lieu,
-                        'ingredient_name' => $row->nguyenLieu?->ten_nguyen_lieu,
-                        'amount' => (float) $row->so_luong,
-                        'stock' => (float) ($row->nguyenLieu?->ton_kho ?? 0),
-                    ];
-                })->values(),
-            ];
-        })->values();
-
         return view('order.create', [
             'menuData' => $menuData,
-            'toppingData' => $toppingData,
             'loaiMons' => $mons->pluck('loaiMon')->filter()->unique('ma_loai_mon')->values(),
         ]);
     }

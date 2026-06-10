@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
-    var STORAGE_KEY = 'order-draft-v5';
+    var STORAGE_KEY = 'order-draft-v6';
     var menuGrid = document.getElementById('menu-grid');
     var orderLines = document.getElementById('order-lines');
     var hiddenInputs = document.getElementById('hidden-inputs');
     var orderEmpty = document.getElementById('order-empty');
     var totalNode = document.getElementById('order-total');
     var form = document.getElementById('order-form');
+    var submitButton = document.getElementById('order-submit');
     var message = document.getElementById('order-message');
     var searchInput = document.getElementById('menu-search');
     var categoryInput = document.getElementById('menu-category');
@@ -14,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var cashChangeNode = document.getElementById('cash-change');
     var paymentInputs = document.querySelectorAll('input[name="phuong_thuc_thanh_toan"]');
     var mons = JSON.parse(document.getElementById('order-menu-data').textContent || '[]');
-    var toppings = JSON.parse(document.getElementById('order-topping-data').textContent || '[]');
     var cart = loadCart();
     var lastTotal = 0;
 
@@ -27,9 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var monMap = byId(mons);
-    var toppingMap = byId(toppings);
     var ingredientMeta = {};
-    mons.concat(toppings).forEach(function (mon) {
+    mons.forEach(function (mon) {
         (mon.recipe || []).forEach(function (row) {
             ingredientMeta[Number(row.ingredient_id)] = row;
         });
@@ -140,17 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 usage[ingredientId] = (usage[ingredientId] || 0) + Number(recipe.amount || 0) * Number(line.so_luong || 0) * percent;
             });
 
-            (line.toppings || []).forEach(function (toppingLine) {
-                var topping = toppingMap[Number(toppingLine.ma_mon)];
-                if (!topping) {
-                    return;
-                }
-
-                (topping.recipe || []).forEach(function (recipe) {
-                    var ingredientId = Number(recipe.ingredient_id);
-                    usage[ingredientId] = (usage[ingredientId] || 0) + Number(recipe.amount || 0) * Number(toppingLine.so_luong || 0);
-                });
-            });
         });
         return usage;
     }
@@ -206,7 +194,6 @@ document.addEventListener('DOMContentLoaded', function () {
             che_do: defaultMode(mon),
             ghi_chu: '',
             tuy_chinh: defaultCustom(mon),
-            toppings: [],
         };
     }
 
@@ -216,21 +203,11 @@ document.addEventListener('DOMContentLoaded', function () {
             tuyChinh[ingredientId] = Number(line.tuy_chinh[ingredientId]);
         });
 
-        var lineToppings = (line.toppings || []).map(function (topping) {
-            return {
-                ma_mon: Number(topping.ma_mon),
-                so_luong: Number(topping.so_luong || 0),
-            };
-        }).sort(function (first, second) {
-            return first.ma_mon - second.ma_mon || first.so_luong - second.so_luong;
-        });
-
         return JSON.stringify({
             ma_mon: Number(line.ma_mon),
             che_do: line.che_do || '',
             ghi_chu: String(line.ghi_chu || '').trim(),
             tuy_chinh: tuyChinh,
-            toppings: lineToppings,
         });
     }
 
@@ -281,12 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function lineTotal(line) {
         var mon = monMap[Number(line.ma_mon)];
-        var total = Number(mon && mon.price ? mon.price : 0) * Number(line.so_luong || 0);
-        (line.toppings || []).forEach(function (item) {
-            var topping = toppingMap[Number(item.ma_mon)];
-            total += Number(topping && topping.price ? topping.price : 0) * Number(item.so_luong || 0);
-        });
-        return total;
+        return Number(mon && mon.price ? mon.price : 0) * Number(line.so_luong || 0);
     }
 
     function createText(tag, className, text) {
@@ -370,10 +342,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 addHidden('items[' + index + '][tuy_chinh][' + ingredientId + ']', line.tuy_chinh[ingredientId]);
             });
 
-            (line.toppings || []).forEach(function (topping, toppingIndex) {
-                addHidden('items[' + index + '][toppings][' + toppingIndex + '][ma_mon]', topping.ma_mon);
-                addHidden('items[' + index + '][toppings][' + toppingIndex + '][so_luong]', topping.so_luong);
-            });
         });
     }
 
@@ -388,6 +356,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderCart() {
         emptyNode(orderLines);
         orderEmpty.classList.toggle('d-none', cart.length > 0);
+        if (submitButton) {
+            submitButton.disabled = cart.length === 0;
+        }
 
         var total = 0;
         cart.forEach(function (line, index) {
@@ -453,10 +424,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var custom = customControl(line, mon, index);
         if (custom) {
             body.appendChild(custom);
-        }
-
-        if (mon.allow_topping) {
-            body.appendChild(toppingControl(line, index));
         }
 
         card.appendChild(body);

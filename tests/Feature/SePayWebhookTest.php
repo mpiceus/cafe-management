@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\ChiTietHoaDon;
 use App\Models\HoaDon;
+use App\Models\Mon;
 use App\Models\NguoiDung;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
@@ -112,5 +114,63 @@ class SePayWebhookTest extends TestCase
             'sepay_id' => 'TX-1002',
             'ma_hoa_don' => $hoaDon->ma_hoa_don,
         ]);
+    }
+
+    public function test_webhook_activates_paid_order_when_no_order_is_being_prepared(): void
+    {
+        $this->requireTables(['hoa_don', 'chi_tiet_hoa_don', 'mon', 'nguoi_dung', 'sepay_transactions']);
+
+        Config::set('sepay.webhook_key', 'test-key');
+        Config::set('sepay.payment_prefix', 'DH');
+
+        ChiTietHoaDon::query()
+            ->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_DANG)
+            ->update(['trang_thai_pha_che' => ChiTietHoaDon::PHA_CHE_XONG]);
+
+        $mon = Mon::query()->first();
+        if (! $mon) {
+            $this->markTestSkipped('Missing menu item.');
+        }
+
+        $owner = NguoiDung::query()->create([
+            'ho_ten' => 'Chủ test active',
+            'ten_dang_nhap' => 'owner_webhook_active',
+            'mat_khau' => 'password',
+            'chuc_vu' => NguoiDung::CHUC_VU_CHU_CUA_HANG,
+            'trang_thai' => NguoiDung::TRANG_THAI_HOAT_DONG,
+        ]);
+
+        $hoaDon = HoaDon::query()->create([
+            'ma_nguoi_dung' => $owner->ma_nguoi_dung,
+            'thoi_gian_tao' => now(),
+            'tong_tien' => 50000,
+            'phuong_thuc_thanh_toan' => 'chuyen_khoan',
+            'trang_thai' => HoaDon::TRANG_THAI_DANG_TAO,
+        ]);
+
+        $chiTiet = ChiTietHoaDon::query()->create([
+            'ma_hoa_don' => $hoaDon->ma_hoa_don,
+            'ma_mon' => $mon->ma_mon,
+            'so_luong' => 1,
+            'trang_thai_pha_che' => ChiTietHoaDon::PHA_CHE_CHO,
+        ]);
+
+        $response = $this->postJson(route('sepay.webhook'), [
+            'id' => 'TX-1003',
+            'gateway' => 'MBBank',
+            'transactionDate' => now()->format('Y-m-d H:i:s'),
+            'accountNumber' => '0123456789',
+            'transferType' => 'in',
+            'transferAmount' => 50000,
+            'content' => 'DH'.$hoaDon->ma_hoa_don,
+            'referenceCode' => 'MBVCB.125',
+            'description' => 'test',
+        ], [
+            'Authorization' => 'Apikey test-key',
+        ]);
+
+        $response->assertOk()->assertJson(['success' => true]);
+
+        $this->assertSame(ChiTietHoaDon::PHA_CHE_DANG, $chiTiet->refresh()->trang_thai_pha_che);
     }
 }

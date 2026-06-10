@@ -17,6 +17,7 @@ class MonRepository implements MonRepositoryInterface
     {
         $items = Mon::query()
             ->with(['loaiMon', 'giaMoiNhat', 'congThucs.nguyenLieu'])
+            ->where('ma_loai_mon', '<>', LoaiMon::MA_TOPPING)
             ->when($filters['ma_loai_mon'] ?? null, fn ($query, string $maLoaiMon) => $query->where('ma_loai_mon', $maLoaiMon))
             ->when($filters['trang_thai'] ?? null, fn ($query, string $trangThai) => $query->where('trang_thai', $trangThai))
             ->orderByDesc('ma_mon')
@@ -77,6 +78,7 @@ class MonRepository implements MonRepositoryInterface
     public function loaiMons(): Collection
     {
         return LoaiMon::query()
+            ->where('ma_loai_mon', '<>', LoaiMon::MA_TOPPING)
             ->orderBy('ten_loai_mon')
             ->get();
     }
