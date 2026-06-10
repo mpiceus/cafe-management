@@ -38,10 +38,7 @@ class OrderService
             ->filter(fn ($item) => ! empty($item['ma_mon']) && (int) ($item['so_luong'] ?? 0) > 0)
             ->map(function ($item) {
                 $item['che_do'] = $this->normalizeCheDo($item['che_do'] ?? null);
-                $item['toppings'] = collect($item['toppings'] ?? [])
-                    ->filter(fn ($topping) => ! empty($topping['ma_mon']) && (int) ($topping['so_luong'] ?? 0) > 0)
-                    ->values()
-                    ->all();
+                $item['toppings'] = [];
 
                 return $item;
             })

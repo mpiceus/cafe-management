@@ -44,7 +44,6 @@
                 <tr>
                     <th>Mã hóa đơn</th>
                     <th>Thời gian</th>
-                    <th>Món</th>
                     <th>Thanh toán</th>
                     <th>Tổng tiền</th>
                     <th>Trạng thái</th>
@@ -56,23 +55,29 @@
                     <tr>
                         <td>#{{ $hoaDon->ma_hoa_don }}</td>
                         <td>{{ $hoaDon->thoi_gian_tao->format('d/m/Y H:i') }}</td>
-                        <td>
-                            @foreach($hoaDon->chiTiets as $chiTiet)
-                                <div class="small">{{ $chiTiet->mon?->ten_mon }} x {{ $chiTiet->so_luong }}</div>
-                            @endforeach
-                        </td>
                         <td>{{ $hoaDon->phuong_thuc_thanh_toan === 'chuyen_khoan' ? 'Chuyển khoản' : 'Tiền mặt' }}</td>
                         <td>{{ number_format($hoaDon->tong_tien, 0, ',', '.') }} đ</td>
-                        <td>{{ ['dang_tao' => 'Chờ thanh toán', 'da_thanh_toan' => 'Đã thanh toán', 'da_hoan_thanh' => 'Đã hoàn thành'][$hoaDon->trang_thai] ?? $hoaDon->trang_thai }}</td>
+                        @php
+                            $statusLabel = $hoaDon->trangThaiHienThi();
+                            $statusClass = match ($statusLabel) {
+                                'Đang pha chế' => 'text-bg-success',
+                                'Chờ pha chế' => 'text-bg-warning',
+                                'Đã hoàn thành' => 'text-bg-primary',
+                                'Chờ thanh toán' => 'text-bg-secondary',
+                                default => 'text-bg-light',
+                            };
+                        @endphp
+                        <td><span class="badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
                         <td class="text-end">
                             <div class="d-flex gap-2 justify-content-end flex-wrap">
                                 <a class="btn btn-outline-primary btn-sm" href="{{ route('order.invoice', $hoaDon) }}">In PDF</a>
                                 @if($hoaDon->phuong_thuc_thanh_toan === 'chuyen_khoan' && $hoaDon->trang_thai === 'dang_tao')
                                     <a class="btn btn-outline-success btn-sm" href="{{ route('payment.checkout', $hoaDon) }}">Thanh toán</a>
                                 @endif
-                                @if(auth()->user()->chuc_vu === \App\Models\NguoiDung::CHUC_VU_CHU_CUA_HANG)
+                                @if(auth()->user()->chuc_vu === \App\Models\NguoiDung::CHUC_VU_CHU_CUA_HANG || 
+                                    auth()->user()->chuc_vu === \App\Models\NguoiDung::CHUC_VU_NHAN_VIEN_ORDER) 
                                     <a class="btn btn-outline-secondary btn-sm" href="{{ route('payment.history', $hoaDon) }}">Chi tiết</a>
-                                @endif
+                                @endif 
                             </div>
                         </td>
                     </tr>

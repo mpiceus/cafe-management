@@ -12,7 +12,7 @@
         fetch(checkout.dataset.statusUrl, { credentials: 'same-origin' })
             .then(response => response.json())
             .then(data => {
-                if (data?.status !== 'da_thanh_toan') {
+                if (data?.status !== 'da_thanh_toan' && data?.status !== 'da_hoan_thanh') {
                     return;
                 }
 

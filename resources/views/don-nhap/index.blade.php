@@ -34,7 +34,7 @@
                     <th>Nhà cung cấp</th>
                     <th>Người tạo</th>
                     <th>Tổng tiền</th>
-                    <th>Chi tiết nhanh</th>
+                    <!-- <th>Chi tiết nhanh</th> -->
                     <th></th>
                 </tr>
             </thead>
@@ -46,7 +46,7 @@
                         <td>{{ $dn->nhaCungCap?->ten_nha_cung_cap }}</td>
                         <td>{{ $dn->nguoiDung?->ho_ten }}</td>
                         <td>{{ number_format($dn->tong_tien, 0, ',', '.') }} đ</td>
-                        <td>
+                        <!-- <td> 
                             @foreach($dn->chiTiets as $ct)
                                 @php
                                     $donViTinhGia = in_array($ct->don_vi_mua, ['kg', 'l'], true)
@@ -59,7 +59,7 @@
                                     x {{ number_format($ct->don_gia, 0, ',', '.') }} đ / {{ $donViTinhGia }}
                                 </div>
                             @endforeach
-                        </td>
+                        </td>-->
                         <td class="text-end">
                             <a class="btn btn-outline-secondary btn-sm" href="{{ route('don-nhap.show', $dn) }}">Xem đơn</a>
                         </td>

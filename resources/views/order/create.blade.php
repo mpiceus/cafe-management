@@ -78,14 +78,13 @@
                     </div>
 
                     <div id="hidden-inputs"></div>
-                    <button class="btn btn-primary w-100 mt-3 flex-shrink-0" type="submit">Thanh toán</button>
+                    <button id="order-submit" class="btn btn-primary w-100 mt-3 flex-shrink-0" type="submit" disabled>Thanh toán</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 <script type="application/json" id="order-menu-data">@json($menuData)</script>
-<script type="application/json" id="order-topping-data">@json($toppingData)</script>
 
 @push('scripts')
     <script src="{{ \App\Http\Controllers\ResourceAssetController::url('js', 'order-create.js') }}"></script>

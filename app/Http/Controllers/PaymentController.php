@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChiTietHoaDon;
 use App\Models\HoaDon;
 use App\Models\SePayRefund;
 use App\Services\SePayService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,9 +37,6 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Customer-facing checkout page (minimal UI for QR display)
-     */
     public function customerCheckout(HoaDon $hoaDon): View|RedirectResponse
     {
         if ($hoaDon->phuong_thuc_thanh_toan !== 'chuyen_khoan') {
@@ -103,14 +102,35 @@ class PaymentController extends Controller
             $transaction->update(['ma_hoa_don' => $hoaDon->ma_hoa_don]);
         }
 
-        if ($hoaDon->trang_thai !== HoaDon::TRANG_THAI_DA_THANH_TOAN) {
-            $hoaDon->update([
-                'trang_thai' => HoaDon::TRANG_THAI_DA_THANH_TOAN,
-                'thoi_gian_thanh_toan' => now(),
-            ]);
-        }
+        DB::transaction(function () use ($hoaDon) {
+            if ($hoaDon->trang_thai === HoaDon::TRANG_THAI_DANG_TAO) {
+                $hoaDon->update([
+                    'trang_thai' => HoaDon::TRANG_THAI_DA_THANH_TOAN,
+                    'thoi_gian_thanh_toan' => now(),
+                ]);
+            }
+
+            if ($hoaDon->trang_thai === HoaDon::TRANG_THAI_DA_THANH_TOAN) {
+                $this->activateOrderIfNoActivePhaChe($hoaDon);
+            }
+        });
 
         return response()->json(['success' => true]);
+    }
+
+    private function activateOrderIfNoActivePhaChe(HoaDon $hoaDon): void
+    {
+        $hasActivePhaChe = ChiTietHoaDon::query()
+            ->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_DANG)
+            ->exists();
+
+        if ($hasActivePhaChe) {
+            return;
+        }
+
+        $hoaDon->chiTiets()
+            ->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_CHO)
+            ->update(['trang_thai_pha_che' => ChiTietHoaDon::PHA_CHE_DANG]);
     }
 
     private function resolveOrderIdFromWebhookPayload(array $payload): ?int

@@ -19,14 +19,11 @@
             <div id="formula-list" class="d-flex flex-column gap-3 mb-3">
                 @foreach($congThucs as $index => $row)
                     <div class="row g-3 align-items-end formula-row">
-                        <div class="col-md-7">
+                        <div class="col-md-7 position-relative">
                             <label class="form-label">Nguyên liệu</label>
-                            <select class="form-select" name="items[{{ $index }}][ma_nguyen_lieu]">
-                                <option value="">Chọn nguyên liệu</option>
-                                @foreach($nguyenLieus as $nl)
-                                    <option value="{{ $nl->ma_nguyen_lieu }}" @selected($row->ma_nguyen_lieu == $nl->ma_nguyen_lieu)>{{ $nl->ten_nguyen_lieu }} ({{ $nl->don_vi_tinh }})</option>
-                                @endforeach
-                            </select>
+                            <input class="form-control ingredient-label" placeholder="Gõ để tìm nguyên liệu" autocomplete="off" value="{{ $row->nguyenLieu?->ten_nguyen_lieu }}">
+                            <input type="hidden" class="ingredient-id" name="items[{{ $index }}][ma_nguyen_lieu]" value="{{ $row->ma_nguyen_lieu }}">
+                            <div class="ingredient-results ingredient-results-dropdown list-group position-absolute start-0 end-0 mt-1 d-none"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Khối lượng hiện tại</label>
@@ -42,7 +39,15 @@
         </form>
     </div>
 </div>
-<script type="application/json" id="formula-options">@json($nguyenLieus->map(fn ($item) => ['id' => $item->ma_nguyen_lieu, 'label' => $item->ten_nguyen_lieu . ' (' . $item->don_vi_tinh . ')'])->values())</script>
+@php
+    $formulaOptions = $nguyenLieus->map(fn ($item) => [
+        'id' => $item->ma_nguyen_lieu,
+        'name' => $item->ten_nguyen_lieu,
+        'unit' => $item->don_vi_tinh,
+        'label' => $item->ten_nguyen_lieu.' ('.$item->don_vi_tinh.')',
+    ])->values();
+@endphp
+<script type="application/json" id="formula-options">@json($formulaOptions)</script>
 
 @push('scripts')
     <script src="{{ \App\Http\Controllers\ResourceAssetController::url('js', 'cong-thuc-edit.js') }}"></script>

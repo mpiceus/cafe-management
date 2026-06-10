@@ -16,6 +16,7 @@ class LoaiMonRepository implements LoaiMonRepositoryInterface
     {
         $items = LoaiMon::query()
             ->withCount('mons')
+            ->where('ma_loai_mon', '<>', LoaiMon::MA_TOPPING)
             ->orderBy('ten_loai_mon')
             ->get();
 

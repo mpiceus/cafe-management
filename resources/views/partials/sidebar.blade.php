@@ -10,7 +10,7 @@
     <nav class="nav flex-column gap-1">
         @if($isAdmin)
             <a data-menu-key="bao-cao" class="nav-link rounded {{ request()->routeIs('bao-cao.*') ? 'active' : '' }}" href="{{ route('bao-cao.index') }}">Báo cáo thống kê</a>
-            <a data-menu-key="nguoi-dung" class="nav-link rounded {{ request()->routeIs('nguoi-dung.*') ? 'active' : '' }}" href="{{ route('nguoi-dung.index') }}">Nhân sự</a>
+            <!-- <a data-menu-key="nguoi-dung" class="nav-link rounded {{ request()->routeIs('nguoi-dung.*') ? 'active' : '' }}" href="{{ route('nguoi-dung.index') }}">Nhân sự</a> -->
         @endif
 
         @if($canViewCatalog)
@@ -47,5 +47,14 @@
         @if($isAdmin || $isBarista)
             <a data-menu-key="pha-che" class="nav-link rounded {{ request()->routeIs('pha-che.*') ? 'active' : '' }}" href="{{ route('pha-che.index') }}">Pha chế</a>
         @endif
+        @if($isAdmin)
+        <!-- <a 
+            data-menu-key="ai-monitor"
+            class="nav-link rounded {{ request()->routeIs('ai-monitor.*') ? 'active' : '' }}"
+            href="{{ route('ai-monitor.index') }}"
+        >
+            Giám sát AI
+        </a>-->
+    @endif
     </nav>
 </aside>

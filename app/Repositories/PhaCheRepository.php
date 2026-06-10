@@ -15,7 +15,7 @@ class PhaCheRepository implements PhaCheRepositoryInterface
         return ChiTietHoaDon::query()
             ->with(['hoaDon', 'mon.congThucs.nguyenLieu', 'tuyChinhs.nguyenLieu', 'toppings.mon.congThucs.nguyenLieu'])
             ->whereHas('hoaDon', fn ($query) => $query->where('trang_thai', HoaDon::TRANG_THAI_DA_THANH_TOAN))
-            ->where('trang_thai_pha_che', '!=', ChiTietHoaDon::PHA_CHE_XONG)
+            ->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_DANG)
             ->orderBy('ma_chi_tiet')
             ->get();
     }
@@ -25,10 +25,11 @@ class PhaCheRepository implements PhaCheRepositoryInterface
         return HoaDon::query()
             ->with([
                 'chiTiets' => fn ($query) => $query
-                    ->where('trang_thai_pha_che', '!=', ChiTietHoaDon::PHA_CHE_XONG)
+                    ->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_DANG)
                     ->with(['mon.congThucs.nguyenLieu', 'tuyChinhs.nguyenLieu', 'toppings.mon.congThucs.nguyenLieu']),
             ])
             ->where('trang_thai', HoaDon::TRANG_THAI_DA_THANH_TOAN)
+            ->whereHas('chiTiets', fn ($query) => $query->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_DANG))
             ->orderBy('thoi_gian_tao')
             ->get()
             ->filter(fn (HoaDon $hoaDon) => $hoaDon->chiTiets->isNotEmpty())
@@ -43,9 +44,38 @@ class PhaCheRepository implements PhaCheRepositoryInterface
 
             if ($hoaDon->chiTiets->every(fn ($item) => $item->trang_thai_pha_che === ChiTietHoaDon::PHA_CHE_XONG)) {
                 $hoaDon->update(['trang_thai' => HoaDon::TRANG_THAI_DA_HOAN_THANH]);
+                $this->activateNextWaitingOrder();
             }
 
             return $chiTiet->refresh();
         });
+    }
+
+    private function activateNextWaitingOrder(): ?HoaDon
+    {
+        $hasActivePhaChe = ChiTietHoaDon::query()
+            ->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_DANG)
+            ->exists();
+
+        if ($hasActivePhaChe) {
+            return null;
+        }
+
+        $hoaDon = HoaDon::query()
+            ->where('trang_thai', HoaDon::TRANG_THAI_DA_THANH_TOAN)
+            ->whereHas('chiTiets', fn ($query) => $query->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_CHO))
+            ->orderBy('thoi_gian_tao')
+            ->orderBy('ma_hoa_don')
+            ->first();
+
+        if (! $hoaDon) {
+            return null;
+        }
+
+        $hoaDon->chiTiets()
+            ->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_CHO)
+            ->update(['trang_thai_pha_che' => ChiTietHoaDon::PHA_CHE_DANG]);
+
+        return $hoaDon;
     }
 }

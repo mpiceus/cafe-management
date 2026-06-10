@@ -60,7 +60,7 @@
                     <th>Loại</th>
                     <th>Giá hiện tại</th>
                     <th>Phục vụ</th>
-                    <th>Topping</th>
+                    <!-- <th>Topping</th> -->
                     <th>Trạng thái</th>
                     <th>Tình trạng kho</th>
                     @if($canManage)
@@ -91,7 +91,7 @@
                             </a>
                         </td>
                         <td>{{ ['ca_hai' => 'Cả hai', 'chi_nong' => 'Chỉ nóng', 'chi_lanh' => 'Chỉ lạnh', 'khong_ap_dung' => 'Không áp dụng'][$mon->che_do_phuc_vu] ?? $mon->che_do_phuc_vu }}</td>
-                        <td>{{ $mon->cho_them_topping ? 'Có' : 'Không' }}</td>
+                        <!-- <td>{{ $mon->cho_them_topping ? 'Có' : 'Không' }}</td> -->
                         <td>
                             <span class="badge {{ $mon->dangBan() ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $mon->dangBan() ? 'Đang bán' : 'Dừng bán' }}</span>
                         </td>

@@ -6,6 +6,7 @@ use App\Models\ChiTietHoaDon;
 use App\Models\ChiTietTopping;
 use App\Models\ChiTietTuyChinh;
 use App\Models\HoaDon;
+use App\Models\LoaiMon;
 use App\Models\Mon;
 use App\Models\NguyenLieu;
 use App\Repositories\Contracts\OrderRepositoryInterface;
@@ -63,21 +64,15 @@ class OrderRepository implements OrderRepositoryInterface
         return Mon::query()
             ->with(['loaiMon', 'giaMoiNhat', 'congThucs.nguyenLieu'])
             ->where('trang_thai', Mon::TRANG_THAI_DANG_BAN)
+            ->where('ma_loai_mon', '<>', LoaiMon::MA_TOPPING)
             ->get()
-            ->reject(fn (Mon $mon) => TextNormalizer::contains($mon->loaiMon?->ten_loai_mon, 'topping'))
             ->sortBy('ten_mon')
             ->values();
     }
 
     public function toppingsDangBan(): Collection
     {
-        return Mon::query()
-            ->with(['loaiMon', 'giaMoiNhat', 'congThucs.nguyenLieu'])
-            ->where('trang_thai', Mon::TRANG_THAI_DANG_BAN)
-            ->get()
-            ->filter(fn (Mon $mon) => TextNormalizer::contains($mon->loaiMon?->ten_loai_mon, 'topping'))
-            ->sortBy('ten_mon')
-            ->values();
+        return collect();
     }
 
     public function nguyenLieuTuyChinh(): Collection
@@ -107,6 +102,9 @@ class OrderRepository implements OrderRepositoryInterface
             ]);
 
             $tongTien = 0;
+            $trangThaiPhaChe = $daThanhToan && ! $this->hasActivePhaChe()
+                ? ChiTietHoaDon::PHA_CHE_DANG
+                : ChiTietHoaDon::PHA_CHE_CHO;
 
             foreach ($items as $item) {
                 $mon = Mon::query()->with(['giaMoiNhat', 'congThucs'])->findOrFail($item['ma_mon']);
@@ -123,7 +121,7 @@ class OrderRepository implements OrderRepositoryInterface
                     'so_luong' => $soLuong,
                     'che_do' => $item['che_do'] ?: null,
                     'ghi_chu' => $item['ghi_chu'] ?? null,
-                    'trang_thai_pha_che' => ChiTietHoaDon::PHA_CHE_CHO,
+                    'trang_thai_pha_che' => $trangThaiPhaChe,
                 ]);
 
                 $tongTien += (float) $mon->giaMoiNhat->gia * $soLuong;
@@ -163,6 +161,13 @@ class OrderRepository implements OrderRepositoryInterface
 
             return $hoaDon->load(['chiTiets.mon', 'nguoiDung']);
         });
+    }
+
+    private function hasActivePhaChe(): bool
+    {
+        return ChiTietHoaDon::query()
+            ->where('trang_thai_pha_che', ChiTietHoaDon::PHA_CHE_DANG)
+            ->exists();
     }
 
     private function truKhoMon(Mon $mon, int $soLuong, array $tuyChinh): void

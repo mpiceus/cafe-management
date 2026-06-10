@@ -54,4 +54,29 @@ class HoaDon extends Model
     {
         return $this->hasMany(SePayRefund::class, 'ma_hoa_don', 'ma_hoa_don');
     }
+
+    public function trangThaiHienThi(): string
+    {
+        return match ($this->trang_thai) {
+            self::TRANG_THAI_DANG_TAO => 'Chờ thanh toán',
+            self::TRANG_THAI_DA_HOAN_THANH => 'Đã hoàn thành',
+            self::TRANG_THAI_DA_THANH_TOAN => $this->trangThaiPhaCheHienThi(),
+            default => $this->trang_thai,
+        };
+    }
+
+    private function trangThaiPhaCheHienThi(): string
+    {
+        $this->loadMissing('chiTiets');
+
+        if ($this->chiTiets->contains(fn ($item) => $item->trang_thai_pha_che === ChiTietHoaDon::PHA_CHE_DANG)) {
+            return 'Đang pha chế';
+        }
+
+        if ($this->chiTiets->contains(fn ($item) => $item->trang_thai_pha_che === ChiTietHoaDon::PHA_CHE_CHO)) {
+            return 'Chờ pha chế';
+        }
+
+        return 'Đã thanh toán';
+    }
 }
