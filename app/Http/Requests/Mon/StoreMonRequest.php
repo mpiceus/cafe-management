@@ -20,6 +20,7 @@ class StoreMonRequest extends FormRequest
             'ten_mon' => ['required', 'string', 'max:100'],
             'mo_ta' => ['nullable', 'string', 'max:255'],
             'hinh_anh_file' => ['nullable', 'image', 'max:2048'],
+            'size' => ['required', Rule::in(['S', 'M', 'L'])],
             'gia' => ['required', 'numeric', 'min:0'],
             'che_do_phuc_vu' => ['required', Rule::in([
                 Mon::CHE_DO_CA_HAI,

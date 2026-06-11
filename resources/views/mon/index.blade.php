@@ -58,6 +58,7 @@
                 <tr>
                     <th>Món</th>
                     <th>Loại</th>
+                    <th>Size</th>
                     <th>Giá hiện tại</th>
                     <th>Phục vụ</th>
                     <!-- <th>Topping</th> -->
@@ -90,6 +91,7 @@
                                 {{ $mon->giaMoiNhat ? number_format($mon->giaMoiNhat->gia, 0, ',', '.') . ' đ' : 'Chưa có giá' }}
                             </a>
                         </td>
+                        <td>{{ $mon->giaMoiNhat->size }}</td>
                         <td>{{ ['ca_hai' => 'Cả hai', 'chi_nong' => 'Chỉ nóng', 'chi_lanh' => 'Chỉ lạnh', 'khong_ap_dung' => 'Không áp dụng'][$mon->che_do_phuc_vu] ?? $mon->che_do_phuc_vu }}</td>
                         <!-- <td>{{ $mon->cho_them_topping ? 'Có' : 'Không' }}</td> -->
                         <td>

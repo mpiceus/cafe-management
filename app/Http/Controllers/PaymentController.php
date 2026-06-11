@@ -154,8 +154,8 @@ class PaymentController extends Controller
     {
         $hoaDon->load([
             'nguoiDung',
-            'chiTiets.mon.giaMoiNhat',
-            'chiTiets.toppings.mon.giaMoiNhat',
+            'chiTiets.mon.giaMons',
+            'chiTiets.toppings.mon.giaMons',
             'chiTiets.tuyChinhs.nguyenLieu',
             'sepayTransactions' => fn ($query) => $query->latest(),
         ]);

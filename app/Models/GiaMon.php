@@ -7,14 +7,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GiaMon extends Model
 {
+    public const SIZE_S = 'S';
+    public const SIZE_M = 'M';
+    public const SIZE_L = 'L';
+
     protected $table = 'gia_mon';
 
-    protected $primaryKey = 'ma_gia_mon';
+    protected $primaryKey = 'ma_mon';
+
+    public $incrementing = false;
 
     public $timestamps = false;
 
     protected $fillable = [
         'ma_mon',
+        'size',
         'gia',
         'ngay_ap_dung',
     ];

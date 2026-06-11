@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var mons = JSON.parse(document.getElementById('order-menu-data').textContent || '[]');
     var cart = loadCart();
     var lastTotal = 0;
+    
 
     function byId(items) {
         var map = {};
@@ -186,10 +187,25 @@ document.addEventListener('DOMContentLoaded', function () {
         return '';
     }
 
+    function getSizeInfo(mon, size) {
+        var normalizedSize = String(size || 'S').toUpperCase();
+        var sizes = Array.isArray(mon.sizes) ? mon.sizes : [];
+        return sizes.find(function (item) {
+            return String(item.size).toUpperCase() === normalizedSize && item.available;
+        }) || null;
+    }
+
+    function defaultSize(mon) {
+        return getSizeInfo(mon, 'S') ? 'S' : ((mon.sizes || []).find(function (item) {
+            return item.available;
+        }) || { size: 'S' }).size;
+    }
+
     function newLine(mon) {
         return {
             key: makeKey(),
             ma_mon: Number(mon.id),
+            size: defaultSize(mon),
             so_luong: 1,
             che_do: defaultMode(mon),
             ghi_chu: '',
@@ -205,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         return JSON.stringify({
             ma_mon: Number(line.ma_mon),
+            size: String(line.size || 'S').toUpperCase(),
             che_do: line.che_do || '',
             ghi_chu: String(line.ghi_chu || '').trim(),
             tuy_chinh: tuyChinh,
@@ -258,7 +275,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function lineTotal(line) {
         var mon = monMap[Number(line.ma_mon)];
-        return Number(mon && mon.price ? mon.price : 0) * Number(line.so_luong || 0);
+        var sizeInfo = mon ? getSizeInfo(mon, line.size || 'S') : null;
+        return Number(sizeInfo ? sizeInfo.price : 0) * Number(line.so_luong || 0);
     }
 
     function createText(tag, className, text) {
@@ -334,6 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
         emptyNode(hiddenInputs);
         cart.forEach(function (line, index) {
             addHidden('items[' + index + '][ma_mon]', line.ma_mon);
+            addHidden('items[' + index + '][size]', line.size || 'S');
             addHidden('items[' + index + '][so_luong]', line.so_luong);
             addHidden('items[' + index + '][che_do]', line.che_do || '');
             addHidden('items[' + index + '][ghi_chu]', line.ghi_chu || '');
@@ -388,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
         header.className = 'd-flex justify-content-between align-items-start gap-3';
         var titleBox = document.createElement('div');
         titleBox.appendChild(createText('div', 'fw-semibold', mon.name));
-        titleBox.appendChild(createText('div', 'small text-muted', formatMoney(mon.price)));
+        titleBox.appendChild(createText('div', 'small text-muted', 'Size ' + (line.size || 'S') + ' - ' + formatMoney(getSizeInfo(mon, line.size || 'S')?.price || 0)));
         var remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'btn btn-outline-danger btn-sm';
@@ -402,6 +421,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var row = document.createElement('div');
         row.className = 'row g-3 mt-1';
         row.appendChild(quantityControl(line, index));
+        row.appendChild(sizeControl(line, mon, index));
         row.appendChild(modeControl(line, mon, index));
         var moneyCol = document.createElement('div');
         moneyCol.className = 'col-12 col-md-4';
@@ -430,6 +450,30 @@ document.addEventListener('DOMContentLoaded', function () {
         return card;
     }
 
+    function sizeControl(line, mon, index) {
+        var col = document.createElement('div');
+        var select = document.createElement('select');
+
+        col.className = 'col-12 col-md-4';
+        select.className = 'form-select form-select-sm';
+        select.dataset.action = 'size';
+        select.dataset.index = index;
+
+        ['S', 'M', 'L'].forEach(function (size) {
+            var info = getSizeInfo(mon, size);
+            var option = document.createElement('option');
+            option.value = size;
+            option.textContent = info ? (size + ' - ' + formatMoney(info.price)) : (size + ' - chưa có giá');
+            option.selected = String(line.size || 'S').toUpperCase() === size;
+            option.disabled = !info;
+            select.appendChild(option);
+        });
+
+        col.appendChild(createText('label', 'form-label small', 'Size'));
+        col.appendChild(select);
+        return col;
+    }
+
     function quantityControl(line, index) {
         var col = document.createElement('div');
         var group = document.createElement('div');
@@ -444,8 +488,12 @@ document.addEventListener('DOMContentLoaded', function () {
         dec.dataset.action = 'dec';
         dec.dataset.index = index;
         dec.textContent = '-';
+        input.type = 'number';
+        input.min = '1';
+        input.step = '1';
         input.className = 'form-control text-center bg-white';
-        input.readOnly = true;
+        input.dataset.action = 'quantity';
+        input.dataset.index = index;
         input.value = line.so_luong;
         inc.type = 'button';
         inc.className = 'btn btn-outline-secondary';
@@ -731,6 +779,35 @@ document.addEventListener('DOMContentLoaded', function () {
             cart[index].che_do = event.target.value;
             renderHiddenInputs();
             saveCart();
+            return;
+        }
+
+        if (action === 'size') {
+            var mon = monMap[Number(cart[index].ma_mon)];
+            if (!getSizeInfo(mon, event.target.value)) {
+                showMessage('Size này chưa có giá bán.', 'danger');
+                renderAll();
+                return;
+            }
+            cart[index].size = event.target.value;
+            showMessage('');
+            renderAll();
+            return;
+        }
+
+        if (action === 'quantity') {
+            var qtyValue = Math.max(1, Math.floor(Number(event.target.value || 1)));
+            var quantityDraft = clone(cart);
+            quantityDraft[index].so_luong = qtyValue;
+            var quantityShortages = shortagesFor(quantityDraft);
+            if (quantityShortages.length) {
+                showMessage(shortageMessage(quantityShortages), 'danger');
+                renderAll();
+                return;
+            }
+            cart = quantityDraft;
+            showMessage('');
+            renderAll();
             return;
         }
 

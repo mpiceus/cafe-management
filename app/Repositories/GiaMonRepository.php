@@ -16,7 +16,7 @@ class GiaMonRepository implements GiaMonRepositoryInterface
     public function monCoGiaMoiNhat(array $filters = []): LengthAwarePaginator
     {
         $items = Mon::query()
-            ->with(['loaiMon', 'giaMoiNhat'])
+            ->with(['loaiMon', 'giaMons'])
             ->orderBy('ten_mon')
             ->get();
 
@@ -29,11 +29,11 @@ class GiaMonRepository implements GiaMonRepositoryInterface
         }
 
         if (($filters['trang_thai_gia'] ?? null) === 'co_gia') {
-            $items = $items->filter(fn (Mon $mon) => $mon->giaMoiNhat !== null);
+            $items = $items->filter(fn (Mon $mon) => $mon->giaMons->isNotEmpty());
         }
 
         if (($filters['trang_thai_gia'] ?? null) === 'chua_co_gia') {
-            $items = $items->filter(fn (Mon $mon) => $mon->giaMoiNhat === null);
+            $items = $items->filter(fn (Mon $mon) => $mon->giaMons->isEmpty());
         }
 
         $page = Paginator::resolveCurrentPage() ?: 1;
@@ -53,12 +53,34 @@ class GiaMonRepository implements GiaMonRepositoryInterface
     {
         return GiaMon::query()
             ->where('ma_mon', $mon->ma_mon)
+            ->orderBy('size')
             ->orderByDesc('ngay_ap_dung')
             ->get();
     }
 
     public function create(array $data): GiaMon
     {
-        return GiaMon::query()->create($data);
+        GiaMon::query()
+            ->where('ma_mon', $data['ma_mon'])
+            ->where('size', $data['size'])
+            ->exists()
+            ? GiaMon::query()
+                ->where('ma_mon', $data['ma_mon'])
+                ->where('size', $data['size'])
+                ->update([
+                    'gia' => $data['gia'],
+                    'ngay_ap_dung' => $data['ngay_ap_dung'],
+                ])
+            : GiaMon::query()->insert([
+                'ma_mon' => $data['ma_mon'],
+                'size' => $data['size'],
+                'gia' => $data['gia'],
+                'ngay_ap_dung' => $data['ngay_ap_dung'],
+            ]);
+
+        return GiaMon::query()
+            ->where('ma_mon', $data['ma_mon'])
+            ->where('size', $data['size'])
+            ->firstOrFail();
     }
 }

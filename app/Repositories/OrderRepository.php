@@ -62,7 +62,7 @@ class OrderRepository implements OrderRepositoryInterface
     public function monsDangBan(): Collection
     {
         return Mon::query()
-            ->with(['loaiMon', 'giaMoiNhat', 'congThucs.nguyenLieu'])
+            ->with(['loaiMon', 'giaMons', 'congThucs.nguyenLieu'])
             ->where('trang_thai', Mon::TRANG_THAI_DANG_BAN)
             ->where('ma_loai_mon', '<>', LoaiMon::MA_TOPPING)
             ->get()
@@ -107,8 +107,10 @@ class OrderRepository implements OrderRepositoryInterface
                 : ChiTietHoaDon::PHA_CHE_CHO;
 
             foreach ($items as $item) {
-                $mon = Mon::query()->with(['giaMoiNhat', 'congThucs'])->findOrFail($item['ma_mon']);
-                if (! $mon->giaMoiNhat) {
+                $mon = Mon::query()->with(['giaMons', 'congThucs'])->findOrFail($item['ma_mon']);
+                $size = $this->normalizeSize($item['size'] ?? null);
+                $giaMon = $mon->giaTheoSize($size);
+                if (! $giaMon) {
                     throw ValidationException::withMessages([
                         'items' => "Món {$mon->ten_mon} chưa có giá bán.",
                     ]);
@@ -118,13 +120,14 @@ class OrderRepository implements OrderRepositoryInterface
                 $chiTiet = ChiTietHoaDon::query()->create([
                     'ma_hoa_don' => $hoaDon->ma_hoa_don,
                     'ma_mon' => $mon->ma_mon,
+                    'size' => $size,
                     'so_luong' => $soLuong,
                     'che_do' => $item['che_do'] ?: null,
                     'ghi_chu' => $item['ghi_chu'] ?? null,
                     'trang_thai_pha_che' => $trangThaiPhaChe,
                 ]);
 
-                $tongTien += (float) $mon->giaMoiNhat->gia * $soLuong;
+                $tongTien += (float) $giaMon->gia * $soLuong;
 
                 foreach (($item['tuy_chinh'] ?? []) as $maNguyenLieu => $tiLe) {
                     if ((int) $tiLe !== 100) {
@@ -141,13 +144,14 @@ class OrderRepository implements OrderRepositoryInterface
                         continue;
                     }
 
-                    $toppingMon = Mon::query()->with('giaMoiNhat')->findOrFail($topping['ma_mon']);
+                    $toppingMon = Mon::query()->with('giaMons')->findOrFail($topping['ma_mon']);
+                    $toppingGia = $toppingMon->giaTheoSize('S');
                     ChiTietTopping::query()->create([
                         'ma_chi_tiet' => $chiTiet->ma_chi_tiet,
                         'ma_mon' => $toppingMon->ma_mon,
                         'so_luong' => $topping['so_luong'],
                     ]);
-                    $tongTien += ((float) $toppingMon->giaMoiNhat?->gia ?? 0) * (int) $topping['so_luong'];
+                    $tongTien += ((float) $toppingGia?->gia ?? 0) * (int) $topping['so_luong'];
                 }
 
                 $this->truKhoMon($mon, $soLuong, $item['tuy_chinh'] ?? []);
@@ -212,8 +216,9 @@ class OrderRepository implements OrderRepositoryInterface
         $usage = [];
 
         foreach ($items as $item) {
-            $mon = Mon::query()->with(['giaMoiNhat', 'congThucs'])->findOrFail($item['ma_mon']);
-            if (! $mon->giaMoiNhat) {
+            $mon = Mon::query()->with(['giaMons', 'congThucs'])->findOrFail($item['ma_mon']);
+            $size = $this->normalizeSize($item['size'] ?? null);
+            if (! $mon->giaTheoSize($size)) {
                 throw ValidationException::withMessages([
                     'items' => "Món {$mon->ten_mon} chưa có giá bán.",
                 ]);
@@ -266,6 +271,7 @@ class OrderRepository implements OrderRepositoryInterface
         foreach ($items as $item) {
             $signature = json_encode([
                 'ma_mon' => $item['ma_mon'],
+                'size' => $this->normalizeSize($item['size'] ?? null),
                 'che_do' => $item['che_do'] ?? '',
                 'ghi_chu' => trim((string) ($item['ghi_chu'] ?? '')),
                 'tuy_chinh' => collect($item['tuy_chinh'] ?? [])->filter()->sortKeys()->all(),
@@ -288,5 +294,12 @@ class OrderRepository implements OrderRepositoryInterface
         }
 
         return array_values($grouped);
+    }
+
+    private function normalizeSize(?string $size): string
+    {
+        $size = strtoupper((string) ($size ?: 'S'));
+
+        return in_array($size, ['S', 'M', 'L'], true) ? $size : 'S';
     }
 }

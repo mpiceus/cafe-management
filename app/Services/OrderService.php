@@ -38,6 +38,7 @@ class OrderService
             ->filter(fn ($item) => ! empty($item['ma_mon']) && (int) ($item['so_luong'] ?? 0) > 0)
             ->map(function ($item) {
                 $item['che_do'] = $this->normalizeCheDo($item['che_do'] ?? null);
+                $item['size'] = $this->normalizeSize($item['size'] ?? null);
                 $item['toppings'] = [];
 
                 return $item;
@@ -62,5 +63,12 @@ class OrderService
         ];
 
         return $map[$cheDo] ?? null;
+    }
+
+    private function normalizeSize(?string $size): string
+    {
+        $size = strtoupper((string) ($size ?: 'S'));
+
+        return in_array($size, ['S', 'M', 'L'], true) ? $size : 'S';
     }
 }

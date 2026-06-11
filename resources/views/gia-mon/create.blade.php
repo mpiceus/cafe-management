@@ -18,6 +18,15 @@
                 <form method="POST" action="{{ route('gia-mon.store', $mon) }}" data-persist-key="gia-mon-{{ $mon->ma_mon }}" data-persist-clear-on-submit="1">
                     @csrf
                     <div class="mb-3">
+                        <label class="form-label" for="size">Size</label>
+                        <select id="size" name="size" class="form-select @error('size') is-invalid @enderror">
+                            @foreach(['S', 'M', 'L'] as $size)
+                                <option value="{{ $size }}" @selected(old('size', 'S') === $size)>{{ $size }}</option>
+                            @endforeach
+                        </select>
+                        @error('size')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label" for="gia">Giá bán</label>
                         <input id="gia" name="gia" type="number" min="0" step="100" class="form-control @error('gia') is-invalid @enderror" value="{{ old('gia', $mon->giaMoiNhat?->gia) }}">
                         @error('gia')<div class="invalid-feedback">{{ $message }}</div>@enderror

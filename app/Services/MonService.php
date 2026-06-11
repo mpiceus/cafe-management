@@ -50,7 +50,20 @@ class MonService
 
     public function taoMoi(array $data): Mon
     {
-        $this->assertUniqueTenMon($data['ten_mon']);
+        $monTonTai = $this->findByTenMon($data['ten_mon']);
+        if ($monTonTai) {
+            $this->assertSizeChuaTonTai($monTonTai, $data['size']);
+
+            $this->giaMonRepository->create([
+                'ma_mon' => $monTonTai->ma_mon,
+                'size' => $data['size'],
+                'gia' => $data['gia'],
+                'ngay_ap_dung' => $data['ngay_ap_dung'] ?? now(),
+            ]);
+
+            return $monTonTai->refresh();
+        }
+
         $data['cho_them_topping'] = (bool) ($data['cho_them_topping'] ?? false);
         $data = $this->xuLyHinhAnh($data);
 
@@ -59,6 +72,7 @@ class MonService
 
             $this->giaMonRepository->create([
                 'ma_mon' => $mon->ma_mon,
+                'size' => $data['size'],
                 'gia' => $data['gia'],
                 'ngay_ap_dung' => $data['ngay_ap_dung'] ?? now(),
             ]);
@@ -71,17 +85,19 @@ class MonService
     {
         $this->assertUniqueTenMon($data['ten_mon'], $mon->ma_mon);
         $giaMoi = (float) $data['gia'];
+        $size = $data['size'];
         $data['cho_them_topping'] = (bool) ($data['cho_them_topping'] ?? false);
         $data = $this->xuLyHinhAnh($data, $mon);
-        unset($data['gia'], $data['ngay_ap_dung']);
+        unset($data['gia'], $data['size'], $data['ngay_ap_dung']);
 
-        return DB::transaction(function () use ($mon, $data, $giaMoi) {
+        return DB::transaction(function () use ($mon, $data, $giaMoi, $size) {
             $mon = $this->monRepository->update($mon, $data);
-            $giaHienTai = $mon->giaMoiNhat?->gia;
+            $giaHienTai = $mon->giaTheoSize($size)?->gia;
 
             if ($giaHienTai === null || (float) $giaHienTai !== $giaMoi) {
                 $this->giaMonRepository->create([
                     'ma_mon' => $mon->ma_mon,
+                    'size' => $size,
                     'gia' => $giaMoi,
                     'ngay_ap_dung' => now(),
                 ]);
@@ -136,6 +152,23 @@ class MonService
         if ($exists) {
             throw ValidationException::withMessages([
                 'ten_mon' => 'Tên món đã tồn tại.',
+            ]);
+        }
+    }
+
+    private function findByTenMon(string $tenMon): ?Mon
+    {
+        $normalized = TextNormalizer::normalize($tenMon);
+
+        return $this->monRepository->allForSearch()
+            ->first(fn (Mon $mon) => TextNormalizer::normalize($mon->ten_mon) === $normalized);
+    }
+
+    private function assertSizeChuaTonTai(Mon $mon, string $size): void
+    {
+        if ($mon->giaTheoSize($size)) {
+            throw ValidationException::withMessages([
+                'size' => "Món {$mon->ten_mon} size {$size} đã tồn tại.",
             ]);
         }
     }

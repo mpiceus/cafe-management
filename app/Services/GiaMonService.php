@@ -29,6 +29,7 @@ class GiaMonService
     {
         return $this->giaMonRepository->create([
             'ma_mon' => $mon->ma_mon,
+            'size' => $data['size'],
             'gia' => $data['gia'],
             'ngay_ap_dung' => $data['ngay_ap_dung'],
         ]);

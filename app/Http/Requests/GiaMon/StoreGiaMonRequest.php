@@ -3,6 +3,7 @@
 namespace App\Http\Requests\GiaMon;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreGiaMonRequest extends FormRequest
 {
@@ -14,6 +15,7 @@ class StoreGiaMonRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'size' => ['required', Rule::in(['S', 'M', 'L'])],
             'gia' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'ngay_ap_dung' => ['required', 'date'],
         ];

@@ -67,7 +67,37 @@ class Mon extends Model
 
     public function giaMoiNhat(): HasOne
     {
-        return $this->hasOne(GiaMon::class, 'ma_mon', 'ma_mon')->latestOfMany('ngay_ap_dung');
+        return $this->hasOne(GiaMon::class, 'ma_mon', 'ma_mon')
+            ->where('size', GiaMon::SIZE_S);
+    }
+
+    public function giaSizeS(): HasOne
+    {
+        return $this->hasOne(GiaMon::class, 'ma_mon', 'ma_mon')
+            ->where('size', GiaMon::SIZE_S);
+    }
+
+    public function giaSizeM(): HasOne
+    {
+        return $this->hasOne(GiaMon::class, 'ma_mon', 'ma_mon')
+            ->where('size', GiaMon::SIZE_M);
+    }
+
+    public function giaSizeL(): HasOne
+    {
+        return $this->hasOne(GiaMon::class, 'ma_mon', 'ma_mon')
+            ->where('size', GiaMon::SIZE_L);
+    }
+
+    public function giaTheoSize(string $size): ?GiaMon
+    {
+        $size = strtoupper($size);
+
+        if ($this->relationLoaded('giaMons')) {
+            return $this->giaMons->firstWhere('size', $size);
+        }
+
+        return $this->giaMons()->where('size', $size)->first();
     }
 
     public function dangBan(): bool

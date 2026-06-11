@@ -18,6 +18,15 @@
 
     @unless($mon->exists)
         <div class="col-md-4">
+            <label class="form-label" for="size">Size</label>
+            <select id="size" name="size" class="form-select @error('size') is-invalid @enderror">
+                @foreach(['S', 'M', 'L'] as $size)
+                    <option value="{{ $size }}" @selected(old('size', 'S') === $size)>{{ $size }}</option>
+                @endforeach
+            </select>
+            @error('size')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+        <div class="col-md-4">
             <label class="form-label" for="gia">Giá món ban đầu</label>
             <input id="gia" name="gia" type="number" min="0" step="100" class="form-control @error('gia') is-invalid @enderror" value="{{ old('gia') }}">
             @error('gia')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -28,6 +37,15 @@
             @error('ngay_ap_dung')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
     @else
+        <div class="col-md-4">
+            <label class="form-label" for="size">Size cập nhật giá</label>
+            <select id="size" name="size" class="form-select @error('size') is-invalid @enderror">
+                @foreach(['S', 'M', 'L'] as $size)
+                    <option value="{{ $size }}" @selected(old('size', 'S') === $size)>{{ $size }}</option>
+                @endforeach
+            </select>
+            @error('size')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
         <div class="col-md-4">
             <label class="form-label" for="gia">Giá hiện tại</label>
             <input id="gia" name="gia" type="number" min="0" step="100" class="form-control @error('gia') is-invalid @enderror" value="{{ old('gia', $mon->giaMoiNhat?->gia ?? 0) }}">

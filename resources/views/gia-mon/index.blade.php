@@ -47,6 +47,7 @@
                     <th>Món</th>
                     <th>Loại</th>
                     <th>Giá hiện tại</th>
+                    <th>Size</th>
                     <th>Ngày áp dụng</th>
                     <th class="text-end">Thao tác</th>
                 </tr>
@@ -57,6 +58,7 @@
                         <td class="fw-semibold">{{ $mon->ten_mon }}</td>
                         <td>{{ $mon->loaiMon?->ten_loai_mon }}</td>
                         <td>{{ $mon->giaMoiNhat ? number_format($mon->giaMoiNhat->gia, 0, ',', '.') . ' đ' : 'Chưa có giá' }}</td>
+                        <td>{{ $mon->giaMoiNhat?->size}}</td>
                         <td>{{ $mon->giaMoiNhat?->ngay_ap_dung?->format('d/m/Y H:i') ?? '-' }}</td>
                         <td class="text-end"><a class="btn btn-outline-primary btn-sm" href="{{ route('gia-mon.create', $mon) }}">Áp dụng giá mới</a></td>
                     </tr>

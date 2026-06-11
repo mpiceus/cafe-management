@@ -16,7 +16,7 @@ class MonRepository implements MonRepositoryInterface
     public function paginate(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
         $items = Mon::query()
-            ->with(['loaiMon', 'giaMoiNhat', 'congThucs.nguyenLieu'])
+            ->with(['loaiMon', 'giaMons', 'giaMoiNhat', 'congThucs.nguyenLieu'])
             ->where('ma_loai_mon', '<>', LoaiMon::MA_TOPPING)
             ->when($filters['ma_loai_mon'] ?? null, fn ($query, string $maLoaiMon) => $query->where('ma_loai_mon', $maLoaiMon))
             ->when($filters['trang_thai'] ?? null, fn ($query, string $trangThai) => $query->where('trang_thai', $trangThai))
@@ -53,7 +53,7 @@ class MonRepository implements MonRepositoryInterface
     public function find(int $id): ?Mon
     {
         return Mon::query()
-            ->with(['loaiMon', 'giaMoiNhat', 'congThucs.nguyenLieu'])
+            ->with(['loaiMon', 'giaMons', 'giaMoiNhat', 'congThucs.nguyenLieu'])
             ->find($id);
     }
 
@@ -85,6 +85,6 @@ class MonRepository implements MonRepositoryInterface
 
     public function allForSearch(): Collection
     {
-        return Mon::query()->with(['congThucs.nguyenLieu', 'giaMoiNhat', 'loaiMon'])->get();
+        return Mon::query()->with(['congThucs.nguyenLieu', 'giaMons', 'giaMoiNhat', 'loaiMon'])->get();
     }
 }

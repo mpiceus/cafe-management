@@ -16,7 +16,7 @@ class ChiTietHoaDon extends Model
     protected $primaryKey = 'ma_chi_tiet';
     public $timestamps = false;
 
-    protected $fillable = ['ma_hoa_don', 'ma_mon', 'so_luong', 'che_do', 'ghi_chu', 'trang_thai_pha_che'];
+    protected $fillable = ['ma_hoa_don', 'ma_mon', 'size', 'so_luong', 'che_do', 'ghi_chu', 'trang_thai_pha_che'];
 
     public function hoaDon(): BelongsTo
     {

@@ -38,7 +38,14 @@ class OrderController extends Controller
                 'id' => $mon->ma_mon,
                 'name' => $mon->ten_mon,
                 'image' => $mon->hinh_anh ? asset('storage/'.$mon->hinh_anh) : null,
-                'price' => (float) ($mon->giaMoiNhat?->gia ?? 0),
+                'price' => (float) ($mon->giaTheoSize('S')?->gia ?? 0),
+                'sizes' => collect(['S', 'M', 'L'])
+                    ->map(fn (string $size) => [
+                        'size' => $size,
+                        'price' => (float) ($mon->giaTheoSize($size)?->gia ?? 0),
+                        'available' => $mon->giaTheoSize($size) !== null,
+                    ])
+                    ->values(),
                 'category_id' => $mon->ma_loai_mon,
                 'category_name' => $mon->loaiMon?->ten_loai_mon,
                 'service_mode' => $mon->che_do_phuc_vu,
@@ -95,7 +102,7 @@ class OrderController extends Controller
 
     public function invoice(HoaDon $hoaDon): Response
     {
-        $hoaDon->load(['chiTiets.mon.giaMoiNhat', 'chiTiets.toppings.mon.giaMoiNhat', 'chiTiets.tuyChinhs.nguyenLieu', 'nguoiDung']);
+        $hoaDon->load(['chiTiets.mon.giaMons', 'chiTiets.toppings.mon.giaMons', 'chiTiets.tuyChinhs.nguyenLieu', 'nguoiDung']);
 
         $pdf = Pdf::loadView('order.invoice', [
             'hoaDon' => $hoaDon,
