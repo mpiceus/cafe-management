@@ -444,8 +444,12 @@ document.addEventListener('DOMContentLoaded', function () {
         dec.dataset.action = 'dec';
         dec.dataset.index = index;
         dec.textContent = '-';
+        input.type = 'number';
+        input.min = '1';
+        input.step = '1';
         input.className = 'form-control text-center bg-white';
-        input.readOnly = true;
+        input.dataset.action = 'line-qty';
+        input.dataset.index = index;
         input.value = line.so_luong;
         inc.type = 'button';
         inc.className = 'btn btn-outline-secondary';
@@ -744,6 +748,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
             cart = next;
+            showMessage('');
+            renderAll();
+            return;
+        }
+
+        if (action === 'line-qty') {
+            var qty = Math.max(1, Math.round(Number(event.target.value || 1)));
+            var draft = clone(cart);
+            draft[index].so_luong = qty;
+            var shortages = shortagesFor(draft);
+            if (shortages.length) {
+                showMessage(shortageMessage(shortages), 'danger');
+                renderAll();
+                return;
+            }
+            cart = draft;
             showMessage('');
             renderAll();
             return;
